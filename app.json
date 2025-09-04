@@ -1,0 +1,23 @@
+{
+  "name": "Olympics PWA",
+  "description": "XV Winter Olympic Saga Game - Progressive Web App",
+  "image": "heroku/python",
+  "stack": "heroku-22",
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "env": {
+    "ENVIRONMENT": {
+      "value": "production"
+    },
+    "PYTHONPATH": {
+      "value": "/app"
+    }
+  },
+  "scripts": {
+    "postdeploy": "echo 'Olympics PWA deployed successfully!'"
+  }
+}

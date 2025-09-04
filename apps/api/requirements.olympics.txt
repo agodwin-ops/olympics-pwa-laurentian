@@ -4,6 +4,7 @@
 # Core FastAPI Stack
 fastapi>=0.112
 uvicorn[standard]>=0.30
+hypercorn>=0.16
 pydantic>=2.7
 
 # Database & Authentication

@@ -1,0 +1,20 @@
+name: olympics-pwa
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: your-repo/olympics-pwa-laurentian
+    branch: main
+  run_command: hypercorn app.main_olympics_only:app --bind 0.0.0.0:8080
+  environment_slug: python
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  routes:
+  - path: /
+  health_check:
+    http_path: /health
+  envs:
+  - key: ENVIRONMENT
+    value: production
+  - key: PYTHONPATH
+    value: /app

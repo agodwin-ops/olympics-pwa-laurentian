@@ -1,0 +1,1 @@
+web: hypercorn app.main_olympics_only:app --bind 0.0.0.0:$PORT
