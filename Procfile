@@ -1,1 +1,0 @@
-web: cd apps/api && uvicorn app.main_olympics_only:app --host 0.0.0.0 --port $PORT
