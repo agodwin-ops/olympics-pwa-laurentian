@@ -15,7 +15,7 @@ FROM python:3.11-slim AS backend
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app/backend
+ENV PYTHONPATH=/app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app directory
-WORKDIR /app/backend
+WORKDIR /app
 
 # Copy and install Python dependencies
 COPY apps/api/requirements.olympics.txt ./requirements.txt
@@ -37,11 +37,6 @@ COPY apps/api ./
 COPY --from=frontend-build /app/frontend/.next/static ./static/
 COPY --from=frontend-build /app/frontend/public ./public/
 
-# Create non-root user
-RUN useradd --create-home --shell /bin/bash appuser
-RUN chown -R appuser:appuser /app
-USER appuser
-
 # Expose port
 EXPOSE 8080
 
@@ -49,5 +44,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-# Start command
+# Start command - Railway will use PORT env var
 CMD ["python", "-m", "uvicorn", "app.main_olympics_only:app", "--host", "0.0.0.0", "--port", "8080"]
