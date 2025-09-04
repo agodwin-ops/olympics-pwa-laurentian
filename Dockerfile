@@ -3,8 +3,8 @@ FROM node:20-alpine AS frontend-build
 
 # Build Next.js frontend
 WORKDIR /app/frontend
-COPY apps/web/package*.json ./
-RUN npm ci --only=production
+COPY apps/web/package.json ./
+RUN npm install --production=false
 
 COPY apps/web ./
 RUN npm run build
