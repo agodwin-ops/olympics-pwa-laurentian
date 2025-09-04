@@ -3,6 +3,11 @@ nixpacks.toml
 .nixpacks/
 *nixpkgs*
 
+# Ignore Node.js detection files to force Docker
+package.json.backup
+package-lock.json.backup
+scripts/
+
 # Ignore development and build artifacts
 node_modules/
 .next/
