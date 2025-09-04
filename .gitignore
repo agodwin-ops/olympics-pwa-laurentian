@@ -91,4 +91,13 @@ docker-data/
 data/
 docs/
 
-.claude/api_env/
+.claude/
+
+# Python virtual environments
+api_env/
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
