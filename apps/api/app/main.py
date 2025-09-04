@@ -1,6 +1,9 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from app.api.projects import router as projects_router
 from app.api.repo import router as repo_router
 from app.api.commits import router as commits_router
@@ -12,17 +15,28 @@ from app.api.settings import router as settings_router
 from app.api.project_services import router as project_services_router
 from app.api.github import router as github_router
 from app.api.vercel import router as vercel_router
+from app.api.auth_supabase import router as auth_router
+# from app.api.students import router as students_router  # TEMP: Disabled for Supabase migration
+from app.api.supabase_auth import router as supabase_auth_router
+# from app.api.admin import router as admin_router  # TEMP: Disabled for Supabase migration
+# from app.api.leaderboard import router as leaderboard_router  # TEMP: Disabled for Supabase migration
+# from app.api.general import router as general_router  # TEMP: Disabled for Supabase migration
+# from app.api.resources import router as resources_router
+# from app.api.realtime import router as realtime_router
 from app.core.logging import configure_logging
 from app.core.terminal_ui import ui
-from sqlalchemy import inspect
-from app.db.base import Base
-import app.models  # noqa: F401 ensures models are imported for metadata
-from app.db.session import engine
+# Removed SQLAlchemy imports - using Supabase SDK only
+from app.core.database_supabase import get_supabase_client_instance
 import os
+from typing import List
 
 configure_logging()
 
+# Initialize rate limiter
+limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Clovable API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Middleware to suppress logging for specific endpoints
 class LogFilterMiddleware(BaseHTTPMiddleware):
@@ -43,12 +57,28 @@ class LogFilterMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(LogFilterMiddleware)
 
-# Basic CORS for local development - support multiple ports
+# Environment-based CORS configuration
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+
+if ENVIRONMENT == "production":
+    # Strict CORS for production
+    allowed_origins = [
+        "https://your-production-domain.com",
+        "https://www.your-production-domain.com"
+    ]
+    # Add your actual production domains here
+    additional_origins = os.getenv("ALLOWED_ORIGINS", "")
+    if additional_origins:
+        allowed_origins.extend(additional_origins.split(","))
+else:
+    # Permissive CORS for development
+    allowed_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins in development
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"] if ENVIRONMENT == "production" else ["*"],
     allow_headers=["*"]
 )
 
@@ -64,6 +94,14 @@ app.include_router(settings_router)  # Settings API
 app.include_router(project_services_router)  # Project services API
 app.include_router(github_router)  # GitHub integration API
 app.include_router(vercel_router)  # Vercel integration API
+app.include_router(auth_router, prefix="/api")  # Olympics authentication API (SQLite)
+app.include_router(supabase_auth_router, prefix="/api")  # Olympics Supabase SDK authentication API
+# app.include_router(students_router, prefix="/api")  # Olympics students API - TEMP: Disabled for migration
+# app.include_router(admin_router, prefix="/api")  # Olympics admin API - TEMP: Disabled for migration
+# app.include_router(leaderboard_router, prefix="/api")  # Olympics leaderboard API - TEMP: Disabled for migration
+# app.include_router(general_router, prefix="/api")  # Olympics general endpoints API - TEMP: Disabled for migration
+# app.include_router(resources_router, prefix="/api")  # Olympics resources API  
+# app.include_router(realtime_router, prefix="/api")  # Olympics real-time API
 
 
 @app.get("/health")
@@ -74,11 +112,10 @@ def health():
 
 @app.on_event("startup")
 def on_startup() -> None:
-    # Auto create tables if not exist; production setups should use Alembic
-    ui.info("Initializing database tables")
-    inspector = inspect(engine)
-    Base.metadata.create_all(bind=engine)
-    ui.success("Database initialization complete")
+    # Supabase tables already exist - no creation needed
+    ui.info("Initializing Supabase connection")
+    get_supabase_client_instance()  # Test connection
+    ui.success("Supabase multi-user deployment ready")
     
     # Show available endpoints
     ui.info("API server ready")

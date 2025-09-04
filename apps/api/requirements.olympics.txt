@@ -1,0 +1,37 @@
+# XV Winter Olympic Saga Game - Production Requirements
+# Optimized for Railway deployment with minimal dependencies
+
+# Core FastAPI Stack
+fastapi>=0.112
+uvicorn[standard]>=0.30
+pydantic>=2.7
+
+# Database & Authentication
+supabase>=2.0.0
+psycopg2-binary>=2.9.0
+passlib[bcrypt]>=1.7.4
+python-jose[cryptography]>=3.3.0
+email-validator>=2.0.0
+
+# HTTP & Networking
+httpx>=0.27
+aiohttp>=3.9
+python-multipart>=0.0.6
+
+# Rate Limiting & Security
+slowapi>=0.1.9
+cryptography>=42.0
+
+# Configuration & Environment
+python-dotenv>=1.0
+
+# Utilities
+rich>=13.0
+
+# Remove unused dependencies for Olympics deployment:
+# - SQLAlchemy (using Supabase only)
+# - websockets (not needed for Olympics PWA)
+# - claude-code-sdk (not needed for Olympics PWA)
+# - docker (not needed in Railway)
+# - openai (not needed for Olympics PWA)
+# - unidiff (not needed for Olympics PWA)
