@@ -1,0 +1,20 @@
+# Force Railway to ignore Nixpacks-related files
+nixpacks.toml
+.nixpacks/
+*nixpkgs*
+
+# Ignore development and build artifacts
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.env.local
+.git/
+.vscode/
+.idea/
+
+# Ignore virtual environments
+api_env/
+venv/
+env/
+.venv/
