@@ -44,5 +44,5 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-# Start command - Railway will use PORT env var
-CMD ["python", "-m", "uvicorn", "app.main_olympics_only:app", "--host", "0.0.0.0", "--port", "8080"]
+# Start command - Use Railway's PORT env var
+CMD ["sh", "-c", "python -m uvicorn app.main_olympics_only:app --host 0.0.0.0 --port ${PORT:-8080}"]
