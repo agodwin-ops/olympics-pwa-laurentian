@@ -112,9 +112,10 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
       } else {
         throw new Error(response.error || 'Login failed');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      return false;
+      // Re-throw the error so the component can display the proper message
+      throw new Error(error?.message || error || 'Login failed. Please check your credentials.');
     }
   };
 
@@ -185,7 +186,7 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
     localStorage.removeItem('olympics_user');
     localStorage.removeItem('olympics_auth_token');
     apiClient.logout();
-    window.location.href = '/onboarding';
+    window.location.href = '/';
   };
 
   const value: AuthContextType = {

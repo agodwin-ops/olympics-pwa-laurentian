@@ -518,85 +518,167 @@ export default function OlympicGameboard({
 
   return (
     <div className="relative w-full h-full min-h-screen bg-winter-gradient overflow-hidden">
-      {/* Header with stats */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200 p-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-6">
-            <h2 className="text-2xl font-oswald font-bold text-gray-900">
-              🏔️ Calgary Olympics 1988
-            </h2>
-            <div className="flex items-center space-x-4 text-sm">
+      {/* Header with stats - Mobile Responsive */}
+      <div className="absolute top-0 left-0 right-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200 p-2 sm:p-4">
+        <div className="max-w-7xl mx-auto">
+          {/* Mobile Layout (sm and below) */}
+          <div className="sm:hidden">
+            {/* Top row - Title and action buttons */}
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-oswald font-bold text-gray-900 truncate">
+                🏔️ Calgary '88
+              </h2>
               <div className="flex items-center space-x-1">
-                <span className="text-olympic-blue font-bold">Moves:</span>
-                <span className="bg-olympic-blue text-white px-2 py-1 rounded">
-                  {gameboardState.availableMoves}
-                </span>
+                <button
+                  onClick={() => setShowInventory(true)}
+                  className="olympic-button secondary text-xs px-2 py-1"
+                >
+                  🎒
+                </button>
+                <button
+                  onClick={() => setShowSkillUpgrade(true)}
+                  className="olympic-button primary text-xs px-2 py-1"
+                >
+                  💪
+                </button>
+                {gameboardState.currentPosition !== 0 && (
+                  <button
+                    onClick={() => {
+                      const shouldRestart = confirm(
+                        '🏠 Return to Olympic Village?\n\n' +
+                        '✅ You will keep all inventory, skills, and XP\n' +
+                        '✅ You will return to the starting position\n' +
+                        '⚠️ Current path progress will be reset\n\n' +
+                        'Click OK to return home, or Cancel to stay here.'
+                      );
+                      if (shouldRestart) {
+                        handleRestartJourney();
+                      }
+                    }}
+                    className="olympic-button secondary text-xs px-2 py-1"
+                  >
+                    🏠
+                  </button>
+                )}
               </div>
-              <div className="flex items-center space-x-1">
-                <span className="text-olympic-yellow font-bold">Gold:</span>
-                <span className="bg-olympic-yellow text-white px-2 py-1 rounded">
-                  {playerStats.gold}
-                </span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <span className="text-green-600 font-bold">Game XP:</span>
-                <span className="bg-green-600 text-white px-2 py-1 rounded">
-                  {playerStats.gameboardXP || 0}
-                </span>
+            </div>
+            
+            {/* Bottom row - Stats */}
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-1">
+                  <span className="text-olympic-blue font-bold">Moves:</span>
+                  <span className="bg-olympic-blue text-white px-1.5 py-0.5 rounded">
+                    {gameboardState.availableMoves}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-olympic-yellow font-bold">Gold:</span>
+                  <span className="bg-olympic-yellow text-white px-1.5 py-0.5 rounded">
+                    {playerStats.gold}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-green-600 font-bold">XP:</span>
+                  <span className="bg-green-600 text-white px-1.5 py-0.5 rounded">
+                    {playerStats.gameboardXP || 0}
+                  </span>
+                </div>
               </div>
               {isOnPath && (
                 <div className="flex items-center space-x-1">
                   <span className="text-purple-600 font-bold">Path:</span>
-                  <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs">
-                    Active ({currentPath.indexOf(gameboardState.currentPosition) + 1}/{currentPath.length})
+                  <span className="bg-purple-600 text-white px-1.5 py-0.5 rounded text-xs">
+                    {currentPath.indexOf(gameboardState.currentPosition) + 1}/{currentPath.length}
                   </span>
                 </div>
               )}
             </div>
           </div>
-          
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => setShowInventory(true)}
-              className="olympic-button secondary text-sm"
-            >
-              🎒 Inventory
-            </button>
-            <button
-              onClick={() => setShowSkillUpgrade(true)}
-              className="olympic-button primary text-sm"
-            >
-              💪 Upgrade Game Skills
-            </button>
-            {gameboardState.currentPosition !== 0 && (
+
+          {/* Desktop Layout (sm and above) */}
+          <div className="hidden sm:flex justify-between items-center">
+            <div className="flex items-center space-x-6">
+              <h2 className="text-2xl font-oswald font-bold text-gray-900">
+                🏔️ Calgary Olympics 1988
+              </h2>
+              <div className="flex items-center space-x-4 text-sm">
+                <div className="flex items-center space-x-1">
+                  <span className="text-olympic-blue font-bold">Moves:</span>
+                  <span className="bg-olympic-blue text-white px-2 py-1 rounded">
+                    {gameboardState.availableMoves}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-olympic-yellow font-bold">Gold:</span>
+                  <span className="bg-olympic-yellow text-white px-2 py-1 rounded">
+                    {playerStats.gold}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-1">
+                  <span className="text-green-600 font-bold">Game XP:</span>
+                  <span className="bg-green-600 text-white px-2 py-1 rounded">
+                    {playerStats.gameboardXP || 0}
+                  </span>
+                </div>
+                {isOnPath && (
+                  <div className="flex items-center space-x-1">
+                    <span className="text-purple-600 font-bold">Path:</span>
+                    <span className="bg-purple-600 text-white px-2 py-1 rounded text-xs">
+                      Active ({currentPath.indexOf(gameboardState.currentPosition) + 1}/{currentPath.length})
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
               <button
-                onClick={() => {
-                  const shouldRestart = confirm(
-                    '🏠 Return to Olympic Village?\n\n' +
-                    '✅ You will keep all inventory, skills, and XP\n' +
-                    '✅ You will return to the starting position\n' +
-                    '⚠️ Current path progress will be reset\n\n' +
-                    'Click OK to return home, or Cancel to stay here.'
-                  );
-                  if (shouldRestart) {
-                    handleRestartJourney();
-                  }
-                }}
+                onClick={() => setShowInventory(true)}
                 className="olympic-button secondary text-sm"
               >
-                🏠 Return Home
+                🎒 Inventory
               </button>
-            )}
+              <button
+                onClick={() => setShowSkillUpgrade(true)}
+                className="olympic-button primary text-sm"
+              >
+                💪 Upgrade Game Skills
+              </button>
+              {gameboardState.currentPosition !== 0 && (
+                <button
+                  onClick={() => {
+                    const shouldRestart = confirm(
+                      '🏠 Return to Olympic Village?\n\n' +
+                      '✅ You will keep all inventory, skills, and XP\n' +
+                      '✅ You will return to the starting position\n' +
+                      '⚠️ Current path progress will be reset\n\n' +
+                      'Click OK to return home, or Cancel to stay here.'
+                    );
+                    if (shouldRestart) {
+                      handleRestartJourney();
+                    }
+                  }}
+                  className="olympic-button secondary text-sm"
+                >
+                  🏠 Return Home
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       {/* Gameboard */}
-      <div className="pt-20 pb-8 px-4">
+      <div className="pt-16 sm:pt-20 pb-4 sm:pb-8 px-2 sm:px-4">
         <div className="max-w-6xl mx-auto">
           <div 
-            className="relative w-full h-96 bg-gradient-to-br from-blue-100 to-white rounded-lg border-2 border-olympic-blue shadow-lg"
-            style={{ minHeight: '600px' }}
+            className="relative w-full bg-gradient-to-br from-blue-100 to-white rounded-lg border-2 border-olympic-blue shadow-lg"
+            style={{ 
+              minHeight: '400px',
+              height: 'calc(100vh - 200px)',
+              maxHeight: '600px'
+            }}
           >
             {/* Gameboard path/trail */}
             <svg className="absolute inset-0 w-full h-full">
@@ -788,41 +870,72 @@ export default function OlympicGameboard({
             })}
           </div>
 
-          {/* Legend */}
-          <div className="mt-6 flex justify-center space-x-3 text-sm flex-wrap">
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-green-500 rounded-full opacity-80"></div>
-              <span>Station Completed</span>
+          {/* Legend - Mobile Responsive */}
+          <div className="mt-4 sm:mt-6">
+            {/* Mobile Layout (2 columns) */}
+            <div className="sm:hidden grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 bg-green-500 rounded-full opacity-80"></div>
+                <span>Station Done</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <span>Step Done</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 bg-canada-red rounded-full animate-pulse"></div>
+                <span>Current</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 bg-olympic-yellow rounded-full animate-bounce"></div>
+                <span>Next Step</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 bg-olympic-blue rounded-full"></div>
+                <span>On Path</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 bg-gray-200 border-2 border-gray-300 rounded-full"></div>
+                <span>Blocked</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-              <span>Step Completed</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-canada-red rounded-full animate-pulse"></div>
-              <span>Current</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-olympic-yellow rounded-full animate-bounce"></div>
-              <span>Next Step</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-olympic-blue rounded-full"></div>
-              <span>On Path</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-gray-200 border-2 border-gray-300 rounded-full"></div>
-              <span>Blocked</span>
+            
+            {/* Desktop Layout */}
+            <div className="hidden sm:flex justify-center space-x-3 text-sm flex-wrap">
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-green-500 rounded-full opacity-80"></div>
+                <span>Station Completed</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                <span>Step Completed</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-canada-red rounded-full animate-pulse"></div>
+                <span>Current</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-olympic-yellow rounded-full animate-bounce"></div>
+                <span>Next Step</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-olympic-blue rounded-full"></div>
+                <span>On Path</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <div className="w-4 h-4 bg-gray-200 border-2 border-gray-300 rounded-full"></div>
+                <span>Blocked</span>
+              </div>
             </div>
           </div>
           
           {isOnPath && (
-            <div className="mt-4 text-center">
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 max-w-md mx-auto">
-                <p className="text-sm text-purple-800 font-medium">
-                  📍 Path Mode Active - Move forward through challenge spots in sequence only
+            <div className="mt-3 sm:mt-4 text-center px-2 sm:px-0">
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-2 sm:p-3 max-w-md mx-auto">
+                <p className="text-xs sm:text-sm text-purple-800 font-medium">
+                  📍 Path Mode Active - Move forward in sequence only
                 </p>
-                <p className="text-xs text-purple-600 mt-1">
+                <p className="text-xs text-purple-600 mt-1 hidden sm:block">
                   ⚠️ No jumping ahead, going backwards, or visiting other stations
                 </p>
               </div>
@@ -865,30 +978,30 @@ export default function OlympicGameboard({
       )}
       
       {selectedChallengeSpot && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
             {/* Header */}
-            <div className="sticky top-0 bg-olympic-blue text-white p-4 rounded-t-lg">
+            <div className="sticky top-0 bg-olympic-blue text-white p-3 sm:p-4 rounded-t-lg">
               <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-3">
-                  <span className="text-2xl">🧠</span>
-                  <div>
-                    <h2 className="text-xl font-oswald font-bold">{selectedChallengeSpot.name}</h2>
-                    <p className="text-sm opacity-90">
-                      Tactics Challenge • Level {challengeLuckyNumbers.skillLevel} ({SKILL_SUCCESS_RATES[challengeLuckyNumbers.skillLevel]?.percentage || 20}% success rate)
+                <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                  <span className="text-xl sm:text-2xl">🧠</span>
+                  <div className="min-w-0">
+                    <h2 className="text-lg sm:text-xl font-oswald font-bold truncate">{selectedChallengeSpot.name}</h2>
+                    <p className="text-xs sm:text-sm opacity-90">
+                      Level {challengeLuckyNumbers.skillLevel} • {SKILL_SUCCESS_RATES[challengeLuckyNumbers.skillLevel]?.percentage || 20}% rate
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setSelectedChallengeSpot(null)}
-                  className="text-white hover:text-gray-300 text-2xl font-bold"
+                  className="text-white hover:text-gray-300 text-xl sm:text-2xl font-bold ml-2"
                 >
                   ×
                 </button>
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="p-4 sm:p-6">
               {/* Story Phase */}
               {challengePhase === 'story' && (
                 <div className="space-y-4">
@@ -931,12 +1044,12 @@ export default function OlympicGameboard({
                   </div>
 
                   {/* Number Selection Grid */}
-                  <div className="grid grid-cols-5 gap-3 max-w-md mx-auto">
+                  <div className="grid grid-cols-5 gap-2 sm:gap-3 max-w-md mx-auto">
                     {Array.from({ length: 10 }, (_, i) => i + 1).map(number => (
                       <button
                         key={number}
                         onClick={() => handleChallengeNumberSelection(number)}
-                        className={`w-12 h-12 rounded-lg border-2 font-bold transition-all ${
+                        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg border-2 font-bold transition-all text-sm sm:text-base ${
                           challengeLuckyNumbers.selectedNumbers.includes(number)
                             ? 'bg-olympic-blue text-white border-olympic-blue'
                             : 'bg-white text-gray-700 border-gray-300 hover:border-olympic-blue hover:bg-olympic-blue/10'
