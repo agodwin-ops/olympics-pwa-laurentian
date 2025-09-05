@@ -11,7 +11,13 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from supabase import create_client, Client
 from supabase.client import ClientOptions
-from gotrue.errors import AuthError
+
+# Custom AuthError class - eliminates gotrue dependency
+class AuthError(Exception):
+    """Custom AuthError for authentication failures"""
+    def __init__(self, message: str, status_code: int = 400):
+        super().__init__(message)
+        self.status_code = status_code
 
 load_dotenv()
 

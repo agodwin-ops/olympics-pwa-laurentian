@@ -1,5 +1,5 @@
 # XV Winter Olympic Saga Game - Production Requirements
-# Optimized for Railway deployment with minimal dependencies
+# Optimized for Render deployment with minimal dependencies
 
 # Core FastAPI Stack
 fastapi>=0.112
@@ -33,6 +33,6 @@ rich>=13.0
 # - SQLAlchemy (using Supabase only)
 # - websockets (not needed for Olympics PWA)
 # - claude-code-sdk (not needed for Olympics PWA)
-# - docker (not needed in Railway)
+# - docker (not needed in Render)
 # - openai (not needed for Olympics PWA)
 # - unidiff (not needed for Olympics PWA)
