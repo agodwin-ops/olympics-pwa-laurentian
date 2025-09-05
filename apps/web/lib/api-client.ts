@@ -98,7 +98,7 @@ class ApiClient {
 
   async login(email: string, password: string): Promise<ApiResponse<any>> {
     const formData = new FormData();
-    formData.append('email', email);
+    formData.append('username', email);  // OAuth2 uses 'username' field for email
     formData.append('password', password);
 
     const response = await fetch(`${this.baseURL}/api/auth/login`, {
