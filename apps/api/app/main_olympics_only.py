@@ -90,6 +90,24 @@ app.include_router(supabase_auth_router, prefix="/api")  # Olympics Supabase SDK
 app.include_router(admin_supabase_router, prefix="/api")  # Olympics Admin Management
 app.include_router(students_supabase_router, prefix="/api")  # Olympics Student Dashboard
 
+@app.get("/")
+def root():
+    """Root endpoint - API information"""
+    return {
+        "message": "XV Winter Olympic Saga Game API",
+        "status": "running",
+        "version": "2.0",
+        "database": "Supabase PostgreSQL",
+        "endpoints": {
+            "health": "/health",
+            "system_status": "/api/system/status",
+            "api_docs": "/docs",
+            "authentication": "/api/auth/",
+            "students": "/api/students/",
+            "admin": "/api/admin/"
+        }
+    }
+
 @app.get("/health")
 def health():
     """Health check for Olympics PWA"""
