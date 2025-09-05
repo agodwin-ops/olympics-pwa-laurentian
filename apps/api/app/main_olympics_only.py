@@ -53,15 +53,15 @@ app.add_middleware(LogFilterMiddleware)
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 if ENVIRONMENT == "production":
-    # Production CORS for Railway deployment
-    railway_url = os.getenv("RAILWAY_STATIC_URL", "")
+    # Production CORS for Render deployment
+    render_url = os.getenv("RENDER_EXTERNAL_URL", "")
     allowed_origins = []
     
-    # Add Railway domain
-    if railway_url:
+    # Add Render domain
+    if render_url:
         allowed_origins.extend([
-            f"https://{railway_url}",
-            f"https://www.{railway_url}"
+            f"https://{render_url}",
+            f"https://www.{render_url}"
         ])
     
     # Add custom domains from environment
@@ -69,9 +69,9 @@ if ENVIRONMENT == "production":
     if additional_origins:
         allowed_origins.extend(additional_origins.split(","))
     
-    # Fallback for Railway auto-generated domains
+    # Fallback for Render auto-generated domains
     if not allowed_origins:
-        allowed_origins = ["https://*.railway.app"]
+        allowed_origins = ["https://*.onrender.com"]
 else:
     # Permissive CORS for development
     allowed_origins = ["*"]
@@ -141,6 +141,6 @@ def on_startup() -> None:
         "Port": os.getenv("PORT", "8080"),
         "Max Students": "50+",
         "Database Dependencies": "Supabase Only ✅",
-        "Railway Ready": "✅" if ENVIRONMENT == "production" else "Development Mode"
+        "Render Ready": "✅" if ENVIRONMENT == "production" else "Development Mode"
     }
     ui.status_line(deployment_info)

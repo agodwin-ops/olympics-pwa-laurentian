@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: olympics-pwa
+    name: claudable-olympics-pwa
     env: docker
     dockerfilePath: ./Dockerfile
     plan: free
@@ -10,4 +10,15 @@ services:
         value: production
       - key: PYTHONPATH
         value: /app
+      - key: PORT
+        value: 8080
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 480
+      - key: ADMIN_CODE
+        value: OLYMPICS2024ADMIN
+      # NOTE: Add these in Render Dashboard Environment Variables:
+      # SUPABASE_URL=https://your-actual-project.supabase.co
+      # SUPABASE_ANON_KEY=your-actual-anon-key
+      # SUPABASE_SERVICE_ROLE_KEY=your-actual-service-role-key  
+      # JWT_SECRET_KEY=your-actual-jwt-secret
     healthCheckPath: /health
