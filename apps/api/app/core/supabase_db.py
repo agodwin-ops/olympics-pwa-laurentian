@@ -59,11 +59,28 @@ class SupabaseDB:
             return None
     
     async def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """Verify password against hash"""
+        """Verify password against hash - supports both bcrypt and PostgreSQL crypt"""
         try:
-            return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
-        except Exception:
-            return False
+            # First try bcrypt format (for regular registrations)
+            if hashed_password.startswith(('$2a$', '$2b$', '$2y$')):
+                return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+            
+            # For PostgreSQL crypt format (manually created admin accounts)
+            # Use Supabase to verify via SQL query
+            result = self.client.rpc('verify_password_crypt', {
+                'password': plain_password,
+                'hash': hashed_password
+            }).execute()
+            
+            return result.data if result.data else False
+            
+        except Exception as e:
+            print(f"Password verification error: {e}")
+            # Fallback: try basic bcrypt
+            try:
+                return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+            except:
+                return False
     
     # ===== PLAYER STATS OPERATIONS =====
     
