@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: claudable-olympics-frontend
+    env: node
+    buildCommand: cd apps/web && npm ci && npm run build
+    startCommand: cd apps/web && npm start
+    plan: free
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_BASE_URL
+        value: https://your-backend-app.onrender.com
+      # Add your actual backend URL above
+    healthCheckPath: /
