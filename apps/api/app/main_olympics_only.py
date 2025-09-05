@@ -134,6 +134,8 @@ def debug():
             "PYTHONPATH": os.getenv("PYTHONPATH")
         },
         "routes_loaded": len(app.routes),
+        "password_fix_deployed": "YES - Backend supports PostgreSQL crypt passwords",
+        "backend_version": "2024-12-03-password-fix",
         "message": "If you see this, the basic app is working"
     }
 
