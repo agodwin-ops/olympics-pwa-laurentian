@@ -69,9 +69,16 @@ if ENVIRONMENT == "production":
     if additional_origins:
         allowed_origins.extend(additional_origins.split(","))
     
-    # Fallback for Render auto-generated domains
+    # Add common frontend deployment platforms
+    allowed_origins.extend([
+        "https://*.onrender.com",
+        "https://*.vercel.app", 
+        "https://*.netlify.app"
+    ])
+    
+    # Fallback if no origins specified
     if not allowed_origins:
-        allowed_origins = ["https://*.onrender.com"]
+        allowed_origins = ["https://*.onrender.com", "https://*.vercel.app"]
 else:
     # Permissive CORS for development
     allowed_origins = ["*"]
