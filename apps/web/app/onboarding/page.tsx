@@ -81,7 +81,7 @@ export default function OnboardingPage() {
         username: form.username,
         password: form.password,
         confirmPassword: form.confirmPassword,
-        userProgram: form.userProgram,
+        userProgram: isAdmin ? 'Primary Instructor' : form.userProgram,
         profilePicture: form.profilePicture || undefined,
         isAdmin: isAdmin,
         adminCode: form.adminCode
@@ -207,30 +207,43 @@ export default function OnboardingPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Program
-                  </label>
-                  <select
-                    required
-                    value={form.userProgram}
-                    onChange={(e) => setForm({ ...form, userProgram: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olympic-blue focus:border-olympic-blue"
-                  >
-                    <option value="">Select your program</option>
-                    {programs.map((program) => (
-                      <option key={program} value={program}>
-                        {program}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {!isAdmin && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Program
+                    </label>
+                    <select
+                      required
+                      value={form.userProgram}
+                      onChange={(e) => setForm({ ...form, userProgram: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olympic-blue focus:border-olympic-blue"
+                    >
+                      <option value="">Select your program</option>
+                      {programs.map((program) => (
+                        <option key={program} value={program}>
+                          {program}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {isAdmin && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Program
+                    </label>
+                    <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-gray-600">
+                      Primary Instructor (Administrator)
+                    </div>
+                  </div>
+                )}
 
                 <button
                   type="button"
                   onClick={() => setStep(2)}
                   className="w-full olympic-button py-3"
-                  disabled={!form.email || !form.username || !form.userProgram}
+                  disabled={!form.email || !form.username || (!isAdmin && !form.userProgram)}
                 >
                   Continue
                 </button>
