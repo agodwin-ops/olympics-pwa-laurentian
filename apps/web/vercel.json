@@ -1,19 +1,8 @@
 {
   "name": "claudable-olympics-frontend",
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
   "env": {
     "NEXT_PUBLIC_API_BASE_URL": "@next_public_api_base_url"
   },
-  "regions": ["cle1"],
-  "functions": {
-    "pages/**": {
-      "memory": 1024
-    }
-  }
+  "regions": ["cle1"]
 }
