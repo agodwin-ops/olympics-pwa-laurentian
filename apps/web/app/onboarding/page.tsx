@@ -106,11 +106,7 @@ export default function OnboardingPage() {
     'BPHE Outdoor Adventure',
     'BPHE Sport Psychology',
     'EDPH',
-    'BSc Kinesiology',
-    'Primary Instructor',
-    'Administrator',
-    'Faculty',
-    'Staff'
+    'BSc Kinesiology'
   ];
 
   return (
