@@ -113,6 +113,23 @@ def health():
     """Health check for Olympics PWA"""
     return {"ok": True, "service": "XV Winter Olympic Saga Game", "database": "Supabase PostgreSQL"}
 
+@app.get("/debug")
+def debug():
+    """Debug endpoint to check app status"""
+    import sys
+    return {
+        "debug": True,
+        "python_version": sys.version,
+        "environment_vars": {
+            "ENVIRONMENT": os.getenv("ENVIRONMENT"),
+            "PORT": os.getenv("PORT"),
+            "SUPABASE_URL": os.getenv("SUPABASE_URL", "NOT_SET")[:50] + "..." if os.getenv("SUPABASE_URL") else "NOT_SET",
+            "PYTHONPATH": os.getenv("PYTHONPATH")
+        },
+        "routes_loaded": len(app.routes),
+        "message": "If you see this, the basic app is working"
+    }
+
 @app.get("/api/system/status")
 def system_status():
     """System status for classroom deployment"""
@@ -136,9 +153,13 @@ def on_startup() -> None:
     ui.info("🏔️ Starting XV Winter Olympic Saga Game API")
     ui.info("🚀 SUPABASE-ONLY MODE - No SQLite dependencies")
     
-    # Test Supabase connection
-    get_supabase_client_instance()
-    ui.success("✅ Supabase PostgreSQL connected - Multi-user deployment ready")
+    # Test Supabase connection with error handling
+    try:
+        get_supabase_client_instance()
+        ui.success("✅ Supabase PostgreSQL connected - Multi-user deployment ready")
+    except Exception as e:
+        ui.error(f"❌ Supabase connection failed: {e}")
+        ui.warning("⚠️  API will start anyway - check environment variables")
     
     # Show available endpoints
     ui.info("📱 Olympics PWA API ready for classroom deployment")
