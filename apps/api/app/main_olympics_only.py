@@ -73,7 +73,8 @@ if ENVIRONMENT == "production":
     allowed_origins.extend([
         "https://*.onrender.com",
         "https://*.vercel.app", 
-        "https://*.netlify.app"
+        "https://*.netlify.app",
+        "https://olympics-pwa-frontend-2024.vercel.app"  # Specific frontend domain
     ])
     
     # Fallback if no origins specified

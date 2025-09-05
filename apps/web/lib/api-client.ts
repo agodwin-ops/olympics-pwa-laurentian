@@ -12,7 +12,8 @@ class ApiClient {
   private token: string | null = null;
 
   constructor(baseURL: string = API_BASE_URL) {
-    this.baseURL = baseURL;
+    // Remove trailing slash to prevent double slashes in URLs
+    this.baseURL = baseURL.replace(/\/$/, '');
     
     // Load token from localStorage if available (client-side only)
     if (typeof window !== 'undefined') {
