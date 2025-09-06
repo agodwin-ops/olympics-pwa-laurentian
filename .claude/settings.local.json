@@ -5,7 +5,16 @@
       "Bash(grep:*)",
       "Bash(curl:*)",
       "Bash(python:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm:*)",
+      "Bash(git push:*)",
+      "Bash(npm run dev:*)",
+      "Bash(source:*)",
+      "Bash(hypercorn:*)",
+      "Bash(uvicorn:*)"
     ],
     "deny": [],
     "ask": []

@@ -199,6 +199,28 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
+  const updateProfile = async (profileData: { username: string; userProgram: string; profilePicture?: string }): Promise<boolean> => {
+    try {
+      const response = await apiClient.post('/api/students/me/complete-profile', {
+        username: profileData.username,
+        user_program: profileData.userProgram,
+        profile_picture_url: profileData.profilePicture
+      });
+
+      if (response.success && response.data) {
+        // Transform and update user data
+        const updatedUser = transformApiUserToFrontendUser(response.data);
+        setUser(updatedUser);
+        localStorage.setItem('olympics_user', JSON.stringify(updatedUser));
+        return true;
+      }
+      return false;
+    } catch (error: any) {
+      console.error('Profile update error:', error);
+      throw new Error(error?.message || 'Failed to update profile');
+    }
+  };
+
   const logout = () => {
     console.log('Logging out user');
     setUser(null);
@@ -214,6 +236,7 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
     register,
     logout,
     loading,
+    updateProfile,
   };
 
   return (

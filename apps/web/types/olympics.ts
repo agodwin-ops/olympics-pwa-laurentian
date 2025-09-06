@@ -18,6 +18,7 @@ export interface AuthContextType {
   register: (userData: RegisterForm) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
+  updateProfile: (profileData: { username: string; userProgram: string; profilePicture?: string }) => Promise<boolean>;
 }
 
 export interface RegisterForm {

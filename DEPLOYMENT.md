@@ -1,6 +1,6 @@
-# XV Winter Olympic Saga Game - Railway Deployment Guide
+# XV Winter Olympic Saga Game - Render Deployment Guide
 
-## 🚀 Quick Deploy to Railway
+## 🚀 Quick Deploy to Render
 
 ### 1. Prepare Supabase Database
 1. Create a new Supabase project at https://supabase.com/dashboard
@@ -13,15 +13,15 @@
    -- etc. (use your existing schema)
    ```
 
-### 2. Deploy to Railway
+### 2. Deploy to Render
 1. Push this codebase to GitHub
-2. Go to https://railway.app/dashboard
-3. Click "New Project" → "Deploy from GitHub repo"
-4. Select your Olympics PWA repository
-5. Railway will auto-detect the configuration from `railway.json`
+2. Go to https://render.com/dashboard
+3. Click "New" → "Web Service"
+4. Connect your GitHub repository
+5. Render will auto-detect the configuration from `render.yaml`
 
 ### 3. Configure Environment Variables
-In Railway dashboard, add these environment variables:
+In Render dashboard, add these environment variables:
 
 **Required:**
 ```bash
@@ -30,6 +30,7 @@ PORT=8080
 
 # Supabase (Required)
 SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key-here
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
 # Authentication
@@ -37,22 +38,22 @@ JWT_SECRET_KEY=your-super-secure-jwt-secret-key-here
 ADMIN_CODE=OLYMPICS2024ADMIN
 ACCESS_TOKEN_EXPIRE_MINUTES=480
 
-# CORS (Auto-configured for Railway)
+# CORS (Auto-configured for Render)
 ALLOWED_ORIGINS=https://your-custom-domain.com
 ```
 
 **Optional:**
 ```bash
-RAILWAY_STATIC_URL=your-custom-domain.com
+RENDER_EXTERNAL_URL=your-custom-domain.com
 ```
 
 ### 4. Verify Deployment
 1. Wait for deployment to complete
-2. Visit your Railway URL (e.g., `https://your-app.railway.app`)
+2. Visit your Render URL (e.g., `https://your-app.onrender.com`)
 3. Check `/health` endpoint shows: `{"ok": true, "service": "XV Winter Olympic Saga Game"}`
 4. Check `/api/system/status` for full system status
 
-## 📁 Project Structure for Railway
+## 📁 Project Structure for Render
 
 ```
 apps/
@@ -66,16 +67,15 @@ apps/
 ├── web/                   # Next.js Frontend (builds to static)
 │   ├── next.config.js    # Production optimized
 │   └── ...
-railway.json              # Railway configuration
-nixpacks.toml             # Build configuration
-Procfile                  # Process definition
+render.yaml               # Render configuration
+Dockerfile                # Build configuration
 .env.olympics.example     # Environment template
 ```
 
 ## 🏫 Classroom Deployment Checklist
 
 - [ ] Supabase project created and configured
-- [ ] Environment variables set in Railway
+- [ ] Environment variables set in Render
 - [ ] Custom domain configured (optional)
 - [ ] Admin account created with `OLYMPICS2024ADMIN` code
 - [ ] Students batch-registered via admin panel
@@ -87,7 +87,7 @@ Procfile                  # Process definition
 - ✅ Uses `main_olympics_only.py` (no SQLite dependencies)
 - ✅ Environment-based CORS configuration
 - ✅ Rate limiting for classroom use
-- ✅ Health checks for Railway
+- ✅ Health checks for Render
 - ✅ Optimized requirements (`requirements.olympics.txt`)
 - ✅ Production logging configuration
 
@@ -108,15 +108,15 @@ Procfile                  # Process definition
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ENVIRONMENT` | Yes | development | Set to `production` for Railway |
-| `PORT` | Yes | 8080 | Railway sets this automatically |
+| `ENVIRONMENT` | Yes | development | Set to `production` for Render |
+| `PORT` | Yes | 8080 | Render sets this automatically |
 | `SUPABASE_URL` | Yes | - | Your Supabase project URL |
 | `SUPABASE_SERVICE_ROLE_KEY` | Yes | - | Your Supabase service role key |
 | `JWT_SECRET_KEY` | Yes | - | Secure random string for JWT signing |
 | `ADMIN_CODE` | Yes | OLYMPICS2024ADMIN | Code for admin registration |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | No | 480 | JWT token expiration (8 hours) |
-| `ALLOWED_ORIGINS` | No | Railway auto-config | Custom domains for CORS |
-| `RAILWAY_STATIC_URL` | No | - | Custom domain (if configured) |
+| `ALLOWED_ORIGINS` | No | Render auto-config | Custom domains for CORS |
+| `RENDER_EXTERNAL_URL` | No | - | Custom domain (if configured) |
 
 ## 📊 Monitoring & Health Checks
 
@@ -127,7 +127,7 @@ Procfile                  # Process definition
 ### Expected Performance
 - **Concurrent Users:** 50+ students
 - **Response Time:** <200ms for API calls
-- **Uptime:** 99.9% (Railway SLA)
+- **Uptime:** 99.9% (Render SLA)
 - **Database:** Supabase handles connection pooling
 
 ## 🎓 Post-Deployment Setup
@@ -148,7 +148,7 @@ Procfile                  # Process definition
 
 ## 🔗 Useful Links
 
-- [Railway Documentation](https://docs.railway.app/)
+- [Render Documentation](https://render.com/docs)
 - [Supabase Documentation](https://supabase.com/docs)
 - [Next.js Deployment](https://nextjs.org/docs/deployment)
 - [FastAPI Production](https://fastapi.tiangolo.com/deployment/)

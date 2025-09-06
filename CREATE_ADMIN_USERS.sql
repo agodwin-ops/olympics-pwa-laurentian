@@ -32,22 +32,22 @@ INSERT INTO public.users (
 -- ADMIN USER 1 - Replace email and username
 (
     uuid_generate_v4(),
-    'instructor1@laurentian.ca',           -- REPLACE WITH ACTUAL EMAIL
-    'primary_instructor_1',                -- REPLACE WITH DESIRED USERNAME  
+    'agodwin@laurentian.ca',               -- PRIMARY INSTRUCTOR 1 EMAIL
+    'ProfAAG',                              -- PRIMARY INSTRUCTOR 1 USERNAME  
     'Primary Instructor',
     true,
-    hash_password('SecureAdmin123!'),      -- REPLACE WITH SECURE PASSWORD
+    hash_password('HotPotato45%'),          -- PRIMARY INSTRUCTOR 1 PASSWORD
     NOW(),
     NOW()
 ),
 -- ADMIN USER 2 - Replace email and username  
 (
     uuid_generate_v4(),
-    'instructor2@laurentian.ca',           -- REPLACE WITH ACTUAL EMAIL
-    'primary_instructor_2',                -- REPLACE WITH DESIRED USERNAME
+    'manicuza@laurentian.ca',              -- PRIMARY INSTRUCTOR 2 EMAIL
+    'MasterGTA',                            -- PRIMARY INSTRUCTOR 2 USERNAME
     'Primary Instructor', 
     true,
-    hash_password('SecureAdmin456!'),      -- REPLACE WITH SECURE PASSWORD
+    hash_password('PurpleMud30!'),          -- PRIMARY INSTRUCTOR 2 PASSWORD
     NOW(),
     NOW()
 );
@@ -70,12 +70,14 @@ WHERE is_admin = true;
 -- ========================================
 /*
 ADMIN USER 1:
-Email: instructor1@laurentian.ca
-Password: SecureAdmin123!
+Email: agodwin@laurentian.ca
+Username: ProfAAG
+Password: HotPotato45%
 
 ADMIN USER 2:  
-Email: instructor2@laurentian.ca
-Password: SecureAdmin456!
+Email: manicuza@laurentian.ca
+Username: MasterGTA
+Password: PurpleMud30!
 
-IMPORTANT: Change the emails and passwords above before running this script!
+READY TO RUN - Credentials have been updated!
 */

@@ -8,6 +8,7 @@ import { getRankByXP, getRankProgress, getNextRank, getXPForNextRank, getQuestPe
 import AdminPanel from '@/components/admin/AdminPanel';
 import OlympicGameboard from '@/components/gameboard/OlympicGameboard';
 import PasswordChangeModal from '@/components/PasswordChangeModal';
+import FileViewer from '@/components/shared/FileViewer';
 import apiClient from '@/lib/api-client';
 
 interface TabNavigationProps {
@@ -592,6 +593,8 @@ function StudentResourcesView({ user }: { user: User }) {
   const [loading, setLoading] = useState(true);
   const [selectedUnit, setSelectedUnit] = useState<string>('');
   const [units, setUnits] = useState<any[]>([]);
+  const [showFileViewer, setShowFileViewer] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
 
   useEffect(() => {
     loadResourcesData();
@@ -776,11 +779,18 @@ function StudentResourcesView({ user }: { user: User }) {
                       <div className="flex-shrink-0">
                         <button
                           onClick={() => {
-                            alert(`Download functionality is disabled in development mode.\n\nFile: ${resource.original_filename}\nSize: ${formatFileSize(resource.file_size)}\nType: ${resource.file_type}`);
+                            setSelectedFile({
+                              filename: resource.original_filename,
+                              fileType: resource.file_type,
+                              fileSize: resource.file_size,
+                              downloadUrl: apiClient.downloadResource(resource.id),
+                              description: resource.description
+                            });
+                            setShowFileViewer(true);
                           }}
                           className="olympic-button text-sm px-3 py-1"
                         >
-                          Download
+                          {resource.file_size > 25000000 ? '📡 View' : '📥 Download'}
                         </button>
                       </div>
                     </div>
@@ -812,6 +822,21 @@ function StudentResourcesView({ user }: { user: User }) {
           </div>
         )}
       </div>
+
+      {/* File Viewer Modal */}
+      {showFileViewer && selectedFile && (
+        <FileViewer
+          filename={selectedFile.filename}
+          fileType={selectedFile.fileType}
+          fileSize={selectedFile.fileSize}
+          downloadUrl={selectedFile.downloadUrl}
+          description={selectedFile.description}
+          onClose={() => {
+            setShowFileViewer(false);
+            setSelectedFile(null);
+          }}
+        />
+      )}
     </div>
   );
 }

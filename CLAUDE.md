@@ -213,7 +213,8 @@ Access interactive API documentation at http://localhost:8080/docs when the back
 - `/api/projects/` - Project management
 - `/api/chat/` - Chat functionality
 - `/api/github/` - GitHub integration
-- `/api/vercel/` - Vercel deployment
+- `/api/vercel/` - Vercel deployment (legacy)
+- `/api/render/` - Render deployment
 - `/ws/chat` - WebSocket chat endpoint
 
 ## Architecture Notes
@@ -237,7 +238,7 @@ Access interactive API documentation at http://localhost:8080/docs when the back
 
 1. **Development**: Use natural language to describe features via the chat interface
 2. **Testing**: Implement unit tests for both frontend and backend components
-3. **Deployment**: Connect GitHub and Vercel for automated deployment pipeline
+3. **Deployment**: Connect GitHub with Render for primary deployment or Vercel as alternative
 4. **Database**: Configure Supabase for production data persistence
 5. **Monitoring**: Add logging and error tracking for production use
 
