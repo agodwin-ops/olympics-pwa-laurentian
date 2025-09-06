@@ -104,6 +104,12 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
       if (response.success && response.data) {
         console.log('Login successful:', response.data);
         
+        // Store authentication token for session persistence
+        if (response.data.access_token) {
+          localStorage.setItem('olympics_auth_token', response.data.access_token);
+          apiClient.setToken(response.data.access_token);
+        }
+        
         // Transform and set user data
         const userData = transformApiUserToFrontendUser(response.data.user);
         setUser(userData);
@@ -156,6 +162,12 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
       
       if (response.success && response.data) {
         console.log('Registration successful:', response.data);
+        
+        // Store authentication token for session persistence
+        if (response.data.access_token) {
+          localStorage.setItem('olympics_auth_token', response.data.access_token);
+          apiClient.setToken(response.data.access_token);
+        }
         
         // Transform and set user data
         const userData = transformApiUserToFrontendUser(response.data.user);
