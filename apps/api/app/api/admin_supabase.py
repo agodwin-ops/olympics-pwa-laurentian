@@ -552,7 +552,6 @@ async def batch_register_students(
                     "password": hashed_password,
                     "user_program": student_data['user_program'],
                     "is_admin": False,
-                    "is_active": True,
                     "created_at": datetime.utcnow().isoformat(),
                     "updated_at": datetime.utcnow().isoformat()
                 }
@@ -645,7 +644,6 @@ async def add_single_student(
             "password": hashed_password,
             "user_program": student_data.user_program,
             "is_admin": False,
-            "is_active": True,
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         }
@@ -784,7 +782,6 @@ async def add_incomplete_student(
             "password": hashed_password,
             "user_program": "",  # Will be set during profile completion
             "is_admin": False,
-            "is_active": True,
             "profile_complete": False,  # Flag to track completion status
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()

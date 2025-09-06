@@ -59,10 +59,16 @@ export default function ProfileSetupPage() {
       if (response.ok && result.success) {
         // Update local user context if updateProfile exists
         if (updateProfile) {
+          // Convert File to data URL if present
+          let profilePictureUrl: string | undefined = undefined;
+          if (form.profilePicture) {
+            profilePictureUrl = URL.createObjectURL(form.profilePicture);
+          }
+          
           await updateProfile({
             username: form.username,
             userProgram: form.userProgram,
-            profilePicture: form.profilePicture || undefined
+            profilePicture: profilePictureUrl
           });
         }
         

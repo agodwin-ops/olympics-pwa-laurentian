@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload, Download, Users, AlertCircle, CheckCircle, X } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface BatchUploadResult {
   successful: Array<{
@@ -116,20 +117,12 @@ export default function SimpleStudentUpload({ onClose, onUploadComplete }: Simpl
 
       for (const student of students) {
         try {
-          const response = await fetch('/api/admin/add-incomplete-student', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              email: student.email,
-              temporary_password: student.password
-            })
+          const response = await apiClient.addIncompleteStudent({
+            email: student.email,
+            temporary_password: student.password
           });
 
-          const result = await response.json();
-
-          if (response.ok && result.success) {
+          if (response.success) {
             results.successful.push({
               email: student.email,
               password: student.password
@@ -137,7 +130,7 @@ export default function SimpleStudentUpload({ onClose, onUploadComplete }: Simpl
           } else {
             results.failed.push({
               email: student.email,
-              error: result.message || result.error || 'Unknown error'
+              error: response.error || 'Unknown error'
             });
           }
         } catch (error) {

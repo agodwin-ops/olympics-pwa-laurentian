@@ -302,6 +302,16 @@ class ApiClient {
     });
   }
 
+  async addIncompleteStudent(student: {
+    email: string;
+    temporary_password: string;
+  }): Promise<ApiResponse<any>> {
+    return this.request('/api/admin/add-incomplete-student', {
+      method: 'POST',
+      body: JSON.stringify(student),
+    });
+  }
+
   // Student endpoints
   async changePassword(passwords: {
     current_password: string;
