@@ -50,6 +50,10 @@ class ResetPasswordRequest(BaseModel):
     student_email: str
     new_temporary_password: str = "NewPass123!"
 
+class CreateIncompleteStudentRequest(BaseModel):
+    email: str
+    temporary_password: str
+
 # Admin authorization dependency
 async def require_admin(current_user = Depends(get_current_user)):
     """Ensure current user is an admin"""
@@ -699,6 +703,73 @@ async def reset_student_password(
         raise
     except Exception as e:
         print(f"❌ Password reset error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
+@router.post("/add-incomplete-student")
+@limiter.limit("20/hour")
+async def add_incomplete_student(
+    request: Request,
+    student_data: CreateIncompleteStudentRequest,
+    current_admin = Depends(require_admin)
+):
+    """Create incomplete student account - student completes profile on first login"""
+    
+    try:
+        from passlib.context import CryptContext
+        
+        pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        service_client = get_supabase_auth_client()
+        
+        # Check if student already exists
+        existing_user = service_client.table('users').select('*').eq('email', student_data.email).execute()
+        if existing_user.data:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Student with this email already exists"
+            )
+        
+        # Hash password
+        hashed_password = pwd_context.hash(student_data.temporary_password)
+        
+        # Create incomplete student user (no username/program yet)
+        new_user = {
+            "id": str(uuid.uuid4()),
+            "email": student_data.email,
+            "username": "",  # Will be set during profile completion
+            "password": hashed_password,
+            "user_program": "",  # Will be set during profile completion
+            "is_admin": False,
+            "is_active": True,
+            "profile_complete": False,  # Flag to track completion status
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        user_result = service_client.table('users').insert(new_user).execute()
+        user_id = user_result.data[0]['id']
+        
+        # Don't create player stats/skills yet - wait for profile completion
+        
+        print(f"✅ Incomplete student account created: {student_data.email}")
+        
+        return {
+            "success": True,
+            "message": f"Student account created for {student_data.email}. They will complete their profile on first login.",
+            "data": {
+                "user_id": user_id,
+                "email": student_data.email,
+                "temporary_password": student_data.temporary_password,
+                "profile_complete": False
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Add incomplete student error: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)

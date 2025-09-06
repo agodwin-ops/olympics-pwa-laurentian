@@ -13,6 +13,7 @@ import re
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from pydantic import BaseModel
+import uuid
 
 from app.core.supabase_db import get_supabase_db, SupabaseDB
 
@@ -45,6 +46,11 @@ class APIResponse(BaseModel):
     success: bool
     message: str
     data: Optional[dict] = None
+
+class CompleteProfileRequest(BaseModel):
+    username: str
+    user_program: str
+    profile_picture: Optional[str] = None  # Base64 encoded image
 
 def validate_email(email: str) -> bool:
     """Validate email format"""
@@ -226,3 +232,111 @@ async def get_current_user_info(
     """Get current user information"""
     # Remove password hash from response
     return {k: v for k, v in current_user.items() if k != 'password_hash'}
+
+@router.post("/complete-profile")
+@limiter.limit("5/minute")
+async def complete_profile(
+    request: Request,
+    profile_data: CompleteProfileRequest,
+    current_user = Depends(get_current_user),
+    db: SupabaseDB = Depends(get_supabase_db)
+):
+    """Complete user profile after first login with pre-set credentials"""
+    
+    try:
+        # Check if profile is already complete
+        if current_user.get('profile_complete', True):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Profile is already complete"
+            )
+        
+        # Check if username is already taken
+        existing_user = await db.get_user_by_username(profile_data.username)
+        if existing_user and existing_user['id'] != current_user['id']:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Username is already taken"
+            )
+        
+        # Update user profile
+        user_updates = {
+            "username": profile_data.username,
+            "user_program": profile_data.user_program,
+            "profile_complete": True,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        # Handle profile picture if provided
+        if profile_data.profile_picture:
+            # In a real implementation, you'd save this to file storage
+            # For now, we'll just store the filename/reference
+            user_updates["profile_picture"] = f"profile_{current_user['id']}.jpg"
+        
+        # Update user in database
+        updated_user = await db.update_user(current_user['id'], user_updates)
+        
+        if not updated_user:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update profile"
+            )
+        
+        # Now create player stats, skills, and inventory
+        # Create initial player stats
+        initial_stats = {
+            "id": str(uuid.uuid4()),
+            "user_id": current_user['id'],
+            "total_xp": 0,
+            "current_xp": 0,
+            "current_level": 1,
+            "current_rank": 0,
+            "gameboard_xp": 0,
+            "gameboard_position": 1,
+            "gameboard_moves": 0,
+            "gold": 3,  # Starting gold
+            "unit_xp": {},
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        await db.create_player_stats(initial_stats)
+        
+        # Create initial player skills (all level 1)
+        await db.create_player_skills(current_user['id'])
+        
+        # Create initial inventory
+        initial_inventory = {
+            "id": str(uuid.uuid4()),
+            "user_id": current_user['id'],
+            "water": 0,
+            "gatorade": 0,
+            "first_aid_kit": 0,
+            "skis": 0,
+            "toques": 0,
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        await db.create_player_inventory(initial_inventory)
+        
+        print(f"✅ Profile completed for user: {profile_data.username} ({current_user['email']})")
+        
+        return {
+            "success": True,
+            "message": "Profile completed successfully",
+            "data": {
+                "username": profile_data.username,
+                "user_program": profile_data.user_program,
+                "profile_complete": True
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Profile completion error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )

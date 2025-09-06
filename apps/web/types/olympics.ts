@@ -7,13 +7,14 @@ export interface User {
   userProgram: string;
   isAdmin: boolean;
   adminRole?: string;
+  profileComplete?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean | string>;
   register: (userData: RegisterForm) => Promise<boolean>;
   logout: () => void;
   loading: boolean;

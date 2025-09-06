@@ -33,6 +33,7 @@ function transformApiUserToFrontendUser(apiUser: any): User {
     userProgram: apiUser.user_program,
     isAdmin: apiUser.is_admin, // Transform snake_case to camelCase
     adminRole: adminRole,
+    profileComplete: apiUser.profile_complete ?? true, // Default to true for existing users
     createdAt: new Date(apiUser.created_at),
     updatedAt: new Date(apiUser.updated_at)
   };
@@ -107,6 +108,12 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
         const userData = transformApiUserToFrontendUser(response.data.user);
         setUser(userData);
         localStorage.setItem('olympics_user', JSON.stringify(userData));
+        
+        // Check if profile needs completion
+        if (userData.profileComplete === false) {
+          // Redirect to profile setup will be handled by the login page
+          return 'incomplete-profile';
+        }
         
         return true;
       } else {

@@ -21,8 +21,15 @@ export default function LoginPage() {
     setError('')
 
     try {
-      await login(form.email, form.password)
-      router.push('/dashboard')
+      const result = await login(form.email, form.password)
+      
+      if (result === 'incomplete-profile') {
+        // User needs to complete their profile
+        router.push('/profile-setup')
+      } else if (result === true) {
+        // Normal login success
+        router.push('/dashboard')
+      }
     } catch (error: any) {
       console.error('Login error:', error)
       setError(error?.message || 'Login failed. Please check your credentials.')

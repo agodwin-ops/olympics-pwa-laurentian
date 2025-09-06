@@ -6,6 +6,8 @@ import StudentCard from './StudentCard';
 import BulkAwardModal from './BulkAwardModal';
 import StudentManagementModal from './StudentManagementModal';
 import ResourceManager from './ResourceManager';
+import SimpleStudentUpload from './SimpleStudentUpload';
+import SimpleUploadResults from './SimpleUploadResults';
 import apiClient from '@/lib/api-client';
 import XPBackupService from '@/lib/xp-backup-service';
 
@@ -127,6 +129,9 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
   const [showBulkModal, setShowBulkModal] = useState(false);
   // Student management modal
   const [showStudentManagementModal, setShowStudentManagementModal] = useState(false);
+  // Batch upload modal
+  const [showBatchUpload, setShowBatchUpload] = useState(false);
+  const [batchUploadResults, setBatchUploadResults] = useState<any>(null);
 
   // Assignment Creation States
   const [newAssignmentName, setNewAssignmentName] = useState<string>('');
@@ -990,6 +995,12 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
               >
                 Manage Students
               </button>
+              <button
+                onClick={() => setShowBatchUpload(true)}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              >
+                📋 Batch Upload Students
+              </button>
             </div>
             
             <form onSubmit={handleAward} className="space-y-6">
@@ -1512,6 +1523,25 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           setStudents([]);
         }}
       />
+
+      {/* Batch Upload Modal */}
+      {showBatchUpload && (
+        <SimpleStudentUpload
+          onClose={() => setShowBatchUpload(false)}
+          onUploadComplete={(results) => {
+            setShowBatchUpload(false);
+            setBatchUploadResults(results);
+          }}
+        />
+      )}
+
+      {/* Batch Upload Results Modal */}
+      {batchUploadResults && (
+        <SimpleUploadResults
+          results={batchUploadResults}
+          onClose={() => setBatchUploadResults(null)}
+        />
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import apiClient from '@/lib/api-client';
+import { X, User, Key, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface StudentManagementModalProps {
   isOpen: boolean;
@@ -9,32 +9,20 @@ interface StudentManagementModalProps {
   onStudentsAdded: () => void;
 }
 
-interface BatchStudent {
-  email: string;
-  username: string;
-  user_program: string;
-}
-
 export default function StudentManagementModal({ 
   isOpen, 
   onClose, 
   onStudentsAdded 
 }: StudentManagementModalProps) {
-  const [activeTab, setActiveTab] = useState<'batch' | 'single' | 'reset'>('batch');
+  const [activeTab, setActiveTab] = useState<'single' | 'reset'>('single');
   const [loading, setLoading] = useState(false);
   
-  // Batch registration state
-  const [batchText, setBatchText] = useState('');
-  const [defaultPassword, setDefaultPassword] = useState('Olympics2024!');
-  const [batchResult, setBatchResult] = useState<any>(null);
-  
-  // Single student state
+  // Single student state (incomplete profile flow)
   const [singleStudent, setSingleStudent] = useState({
     email: '',
-    username: '',
-    user_program: '',
     temporary_password: 'GamePass123!'
   });
+  const [singleResult, setSingleResult] = useState<string>('');
   
   // Password reset state
   const [resetEmail, setResetEmail] = useState('');
@@ -43,88 +31,45 @@ export default function StudentManagementModal({
 
   if (!isOpen) return null;
 
-  const handleBatchRegistration = async () => {
+  const handleSingleStudentCreation = async () => {
     setLoading(true);
-    setBatchResult(null);
+    setSingleResult('');
     
     try {
-      // Parse batch text - expect format: email,username,program per line
-      const lines = batchText.trim().split('\n').filter(line => line.trim());
-      const students: BatchStudent[] = [];
-      const errors: string[] = [];
+      if (!singleStudent.email || !singleStudent.temporary_password) {
+        setSingleResult('❌ Please enter both email and password');
+        setLoading(false);
+        return;
+      }
       
-      lines.forEach((line, index) => {
-        const parts = line.split(',').map(p => p.trim());
-        if (parts.length >= 3) {
-          students.push({
-            email: parts[0],
-            username: parts[1],
-            user_program: parts[2]
-          });
-        } else {
-          errors.push(`Line ${index + 1}: Invalid format (expected: email,username,program)`);
-        }
+      // Call the incomplete student creation API
+      const response = await fetch('/api/admin/add-incomplete-student', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: singleStudent.email,
+          temporary_password: singleStudent.temporary_password
+        })
       });
       
-      if (errors.length > 0) {
-        setBatchResult({
-          success: false,
-          message: 'Format errors found',
-          data: { errors }
-        });
-        return;
-      }
+      const result = await response.json();
       
-      if (students.length === 0) {
-        setBatchResult({
-          success: false,
-          message: 'No valid students found'
-        });
-        return;
-      }
-      
-      const response = await apiClient.batchRegisterStudents(students, defaultPassword);
-      setBatchResult(response);
-      
-      if (response.success) {
+      if (response.ok && result.success) {
+        setSingleResult(`✅ Account created for ${singleStudent.email}. Student will complete their profile on first login.`);
         onStudentsAdded();
-      }
-      
-    } catch (error) {
-      setBatchResult({
-        success: false,
-        message: 'Registration failed',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSingleStudentAdd = async () => {
-    setLoading(true);
-    
-    try {
-      const response = await apiClient.addSingleStudent(singleStudent);
-      
-      if (response.success) {
+        // Clear form after success
         setSingleStudent({
           email: '',
-          username: '',
-          user_program: '',
           temporary_password: 'GamePass123!'
         });
-        onStudentsAdded();
+      } else {
+        setSingleResult(`❌ Failed to create account: ${result.error || result.message || 'Unknown error'}`);
       }
-      
-      setBatchResult(response);
-      
-    } catch (error) {
-      setBatchResult({
-        success: false,
-        message: 'Failed to add student',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+    } catch (error: any) {
+      console.error('Single student creation error:', error);
+      setSingleResult(`❌ Error: ${error.message || 'Failed to create student account'}`);
     } finally {
       setLoading(false);
     }
@@ -135,305 +80,230 @@ export default function StudentManagementModal({
     setResetResult('');
     
     try {
-      const response = await apiClient.resetStudentPassword(resetEmail, resetPassword);
+      if (!resetEmail || !resetPassword) {
+        setResetResult('❌ Please enter both email and new password');
+        setLoading(false);
+        return;
+      }
       
-      if (response.success) {
-        setResetResult(`Password reset successful for ${resetEmail}. New password: ${resetPassword}`);
+      const response = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          student_email: resetEmail,
+          new_temporary_password: resetPassword
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok && result.success) {
+        setResetResult(`✅ Password reset for ${resetEmail}. New password: ${resetPassword}`);
+        // Clear form after success
         setResetEmail('');
         setResetPassword('NewPass123!');
       } else {
-        setResetResult(`Failed to reset password: ${response.message || 'Unknown error'}`);
+        setResetResult(`❌ Failed to reset password: ${result.error || result.message || 'Unknown error'}`);
       }
-      
-    } catch (error) {
-      setResetResult(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      setResetResult(`❌ Error: ${error.message || 'Failed to reset password'}`);
     } finally {
       setLoading(false);
     }
   };
 
-  const generatePasswordList = () => {
-    if (!batchResult?.success || !batchResult?.data?.successful) return '';
-    
-    return batchResult.data.successful
-      .map((student: any) => `${student.username}: ${student.temporary_password}`)
-      .join('\n');
-  };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Student Management</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
-            >
-              ×
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h2 className="text-xl font-semibold text-gray-900">Student Management</h2>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-gray-100 rounded-lg"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
 
+        <div className="p-6">
           {/* Tab Navigation */}
-          <div className="flex mb-6 border-b">
-            <button
-              onClick={() => setActiveTab('batch')}
-              className={`px-4 py-2 font-medium ${
-                activeTab === 'batch' 
-                  ? 'text-blue-600 border-b-2 border-blue-600' 
-                  : 'text-gray-500'
-              }`}
-            >
-              Batch Registration
-            </button>
+          <div className="flex space-x-1 mb-6 bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setActiveTab('single')}
-              className={`px-4 py-2 font-medium ${
-                activeTab === 'single' 
-                  ? 'text-blue-600 border-b-2 border-blue-600' 
-                  : 'text-gray-500'
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'single'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Add Single Student
+              <div className="flex items-center justify-center gap-2">
+                <User className="h-4 w-4" />
+                Add Individual Student
+              </div>
             </button>
             <button
               onClick={() => setActiveTab('reset')}
-              className={`px-4 py-2 font-medium ${
-                activeTab === 'reset' 
-                  ? 'text-blue-600 border-b-2 border-blue-600' 
-                  : 'text-gray-500'
+              className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                activeTab === 'reset'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              Reset Password
+              <div className="flex items-center justify-center gap-2">
+                <Key className="h-4 w-4" />
+                Reset Password
+              </div>
             </button>
           </div>
 
-          {/* Batch Registration Tab */}
-          {activeTab === 'batch' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Batch Student Registration</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Paste student data (one per line): email,username,program
-              </p>
-              
-              <div className="mb-4">
+          {/* Single Student Tab */}
+          {activeTab === 'single' && (
+            <div className="space-y-6">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-blue-900">How This Works</h3>
+                    <p className="text-sm text-blue-700 mt-1">
+                      Create a student account with email and password. The student will login and complete their profile by choosing their username, program, and profile picture.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Default Password
+                  Student Email
+                </label>
+                <input
+                  type="email"
+                  value={singleStudent.email}
+                  onChange={(e) => setSingleStudent({ ...singleStudent, email: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="student@university.ca"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Temporary Password
                 </label>
                 <input
                   type="text"
-                  value={defaultPassword}
-                  onChange={(e) => setDefaultPassword(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  placeholder="Olympics2024!"
+                  value={singleStudent.temporary_password}
+                  onChange={(e) => setSingleStudent({ ...singleStudent, temporary_password: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                  placeholder="Enter temporary password"
                 />
+                <p className="text-sm text-gray-500 mt-1">
+                  Student will use this password for their first login
+                </p>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Student Data
-                </label>
-                <textarea
-                  value={batchText}
-                  onChange={(e) => setBatchText(e.target.value)}
-                  rows={8}
-                  className="w-full p-3 border border-gray-300 rounded-md font-mono text-sm"
-                  placeholder={`student1@laurentian.ca,Alice_Snow,Environmental Science
-student2@laurentian.ca,Bob_Mountain,Physics
-student3@laurentian.ca,Carol_Ice,Biology`}
-                />
-              </div>
-
-              <div className="flex justify-between items-center mb-4">
-                <button
-                  onClick={handleBatchRegistration}
-                  disabled={loading || !batchText.trim()}
-                  className={`px-4 py-2 rounded-md text-white font-medium ${
-                    loading || !batchText.trim()
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  }`}
-                >
-                  {loading ? 'Processing...' : 'Register Students'}
-                </button>
-              </div>
-
-              {/* Results */}
-              {batchResult && (
-                <div className={`p-4 rounded-md mb-4 ${
-                  batchResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+              {singleResult && (
+                <div className={`p-4 rounded-lg ${
+                  singleResult.startsWith('✅') 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'bg-red-50 border border-red-200'
                 }`}>
-                  <h4 className={`font-medium ${batchResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                    {batchResult.success ? 'Registration Successful' : 'Registration Failed'}
-                  </h4>
-                  <p className={`text-sm ${batchResult.success ? 'text-green-700' : 'text-red-700'}`}>
-                    {batchResult.message}
+                  <p className={`text-sm ${
+                    singleResult.startsWith('✅') ? 'text-green-800' : 'text-red-800'
+                  }`}>
+                    {singleResult}
                   </p>
-                  
-                  {batchResult.success && batchResult.data && (
-                    <div className="mt-3">
-                      <p className="text-sm text-green-700">
-                        Successful: {batchResult.data.successful?.length || 0} | 
-                        Failed: {batchResult.data.failed?.length || 0}
-                      </p>
-                      
-                      {batchResult.data.successful?.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-sm font-medium text-green-800">Password List:</p>
-                          <textarea
-                            value={generatePasswordList()}
-                            readOnly
-                            rows={6}
-                            className="w-full mt-1 p-2 text-xs font-mono bg-white border border-green-300 rounded"
-                            placeholder="Student passwords will appear here"
-                          />
-                          <p className="text-xs text-green-600 mt-1">
-                            Copy this list to give to students in class
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Single Student Tab */}
-          {activeTab === 'single' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Add Single Student</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Add individual students manually for late enrollments
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={singleStudent.email}
-                    onChange={(e) => setSingleStudent(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="student@laurentian.ca"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Username
-                  </label>
-                  <input
-                    type="text"
-                    value={singleStudent.username}
-                    onChange={(e) => setSingleStudent(prev => ({ ...prev, username: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Alice_Snow"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Program
-                  </label>
-                  <input
-                    type="text"
-                    value={singleStudent.user_program}
-                    onChange={(e) => setSingleStudent(prev => ({ ...prev, user_program: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="Environmental Science"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Temporary Password
-                  </label>
-                  <input
-                    type="text"
-                    value={singleStudent.temporary_password}
-                    onChange={(e) => setSingleStudent(prev => ({ ...prev, temporary_password: e.target.value }))}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="GamePass123!"
-                  />
-                </div>
-              </div>
 
               <button
-                onClick={handleSingleStudentAdd}
-                disabled={loading || !singleStudent.email || !singleStudent.username || !singleStudent.user_program}
-                className={`px-4 py-2 rounded-md text-white font-medium ${
-                  loading || !singleStudent.email || !singleStudent.username || !singleStudent.user_program
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
+                onClick={handleSingleStudentCreation}
+                disabled={loading || !singleStudent.email || !singleStudent.temporary_password}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
-                {loading ? 'Adding...' : 'Add Student'}
+                {loading ? 'Creating Account...' : 'Create Student Account'}
               </button>
             </div>
           )}
 
           {/* Password Reset Tab */}
           {activeTab === 'reset' && (
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Reset Student Password</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                Reset a student's password if they forget it
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Student Email
-                  </label>
-                  <input
-                    type="email"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="student@laurentian.ca"
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    New Temporary Password
-                  </label>
-                  <input
-                    type="text"
-                    value={resetPassword}
-                    onChange={(e) => setResetPassword(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    placeholder="NewPass123!"
-                  />
+            <div className="space-y-6">
+              <div className="p-4 bg-amber-50 rounded-lg">
+                <div className="flex items-start gap-2">
+                  <Key className="h-5 w-5 text-amber-600 mt-0.5" />
+                  <div>
+                    <h3 className="font-medium text-amber-900">Reset Student Password</h3>
+                    <p className="text-sm text-amber-700 mt-1">
+                      Reset a student's password if they forgot their login credentials or need a new temporary password.
+                    </p>
+                  </div>
                 </div>
               </div>
 
-              <button
-                onClick={handlePasswordReset}
-                disabled={loading || !resetEmail}
-                className={`px-4 py-2 rounded-md text-white font-medium ${
-                  loading || !resetEmail
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-              >
-                {loading ? 'Resetting...' : 'Reset Password'}
-              </button>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Student Email
+                </label>
+                <input
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                  placeholder="student@university.ca"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  New Temporary Password
+                </label>
+                <input
+                  type="text"
+                  value={resetPassword}
+                  onChange={(e) => setResetPassword(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 font-mono"
+                  placeholder="Enter new password"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Provide this new password to the student
+                </p>
+              </div>
 
               {resetResult && (
-                <div className={`mt-4 p-3 rounded-md ${
-                  resetResult.includes('successful') 
-                    ? 'bg-green-50 text-green-800 border border-green-200' 
-                    : 'bg-red-50 text-red-800 border border-red-200'
+                <div className={`p-4 rounded-lg ${
+                  resetResult.startsWith('✅') 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'bg-red-50 border border-red-200'
                 }`}>
-                  {resetResult}
+                  <p className={`text-sm ${
+                    resetResult.startsWith('✅') ? 'text-green-800' : 'text-red-800'
+                  }`}>
+                    {resetResult}
+                  </p>
                 </div>
               )}
+
+              <button
+                onClick={handlePasswordReset}
+                disabled={loading || !resetEmail || !resetPassword}
+                className="w-full bg-amber-600 text-white py-3 px-4 rounded-lg hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {loading ? 'Resetting Password...' : 'Reset Password'}
+              </button>
             </div>
           )}
+
+          {/* Close Button */}
+          <div className="mt-8 pt-6 border-t">
+            <button
+              onClick={onClose}
+              className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 font-medium"
+            >
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
