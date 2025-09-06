@@ -478,13 +478,45 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       // Load assignments
       const assignmentsResponse = await apiClient.getAssignments();
       if (assignmentsResponse.success) {
-        setAssignments(assignmentsResponse.data);
+        // Transform assignments from snake_case to camelCase
+        const transformedAssignments = assignmentsResponse.data.map((assignment: any) => {
+          // Determine quest type from unit name if available
+          let questType: 1 | 2 | 3 = 1;
+          if (assignment.units?.name) {
+            if (assignment.units.name.includes('Quest 2') || assignment.units.name.includes('Children')) {
+              questType = 2;
+            } else if (assignment.units.name.includes('Quest 3') || assignment.units.name.includes('Adolescence')) {
+              questType = 3;
+            }
+          }
+          
+          return {
+            id: assignment.id,
+            name: assignment.name,
+            description: assignment.description,
+            unitId: assignment.unit_id,
+            questType: questType,
+            maxXP: assignment.max_xp, // Transform snake_case to camelCase
+            createdBy: assignment.created_by,
+            createdAt: new Date(assignment.created_at)
+          };
+        });
+        setAssignments(transformedAssignments);
       }
 
       // Load units
       const unitsResponse = await apiClient.getUnits();
       if (unitsResponse.success) {
-        setUnits(unitsResponse.data);
+        // Transform units from snake_case to camelCase
+        const transformedUnits = unitsResponse.data.map((unit: any) => ({
+          id: unit.id,
+          name: unit.name,
+          description: unit.description,
+          orderIndex: unit.order_index, // Transform snake_case to camelCase
+          isActive: unit.is_active, // Transform snake_case to camelCase
+          createdAt: new Date(unit.created_at)
+        }));
+        setUnits(transformedUnits);
       }
       
       // Mock data for development (fallback)
