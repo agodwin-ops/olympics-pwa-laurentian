@@ -1,0 +1,23 @@
+{
+  "builds": [
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "https://claudable-olympics-pwa.onrender.com"
+  },
+  "functions": {
+    "apps/web/**": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://claudable-olympics-pwa.onrender.com/api/$1"
+    }
+  ]
+}
