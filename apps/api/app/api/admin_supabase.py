@@ -339,6 +339,48 @@ async def bulk_award_students(
             detail=str(e)
         )
 
+@router.delete("/assignments/{assignment_id}")
+@limiter.limit("10/minute")
+async def delete_assignment(
+    request: Request,
+    assignment_id: str,
+    current_admin = Depends(require_admin)
+):
+    """Delete an assignment - for admin cleanup/testing"""
+    
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Check if assignment exists and get info for logging
+        assignment_check = service_client.table('assignments').select('*').eq('id', assignment_id).execute()
+        if not assignment_check.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Assignment not found"
+            )
+        
+        assignment_name = assignment_check.data[0]['name']
+        
+        # Delete the assignment
+        result = service_client.table('assignments').delete().eq('id', assignment_id).execute()
+        
+        print(f"✅ Assignment deleted: {assignment_name} (ID: {assignment_id}) by admin: {current_admin['email']}")
+        
+        return {
+            "success": True,
+            "message": f"Assignment '{assignment_name}' deleted successfully",
+            "data": {"assignment_id": assignment_id, "name": assignment_name}
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Delete assignment error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
 @router.get("/assignments")
 async def get_assignments(current_admin = Depends(require_admin)):
     """Get all assignments for admin interface"""

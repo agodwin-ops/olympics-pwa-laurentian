@@ -1276,8 +1276,32 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                         <div className="font-medium text-gray-900">{assignment.name}</div>
                         <div className="text-sm text-gray-500">Max: {assignment.maxXP} XP</div>
                       </div>
-                      <div className="text-sm text-gray-400">
-                        Created: {new Date(assignment.createdAt).toLocaleDateString()}
+                      <div className="flex items-center space-x-3">
+                        <div className="text-sm text-gray-400">
+                          Created: {new Date(assignment.createdAt).toLocaleDateString()}
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Delete assignment "${assignment.name}"?\n\nThis cannot be undone and will remove it from all student award records.`)) {
+                              try {
+                                const response = await apiClient.deleteAssignment(assignment.id);
+                                if (response.success) {
+                                  setAssignments(prev => prev.filter(a => a.id !== assignment.id));
+                                  console.log('✅ Assignment deleted:', assignment.name);
+                                } else {
+                                  alert('Failed to delete assignment: ' + (response.error || 'Unknown error'));
+                                }
+                              } catch (error) {
+                                console.error('Delete assignment error:', error);
+                                alert('Error deleting assignment. Check console for details.');
+                              }
+                            }
+                          }}
+                          className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded transition-colors"
+                          title="Delete Assignment"
+                        >
+                          🗑️
+                        </button>
                       </div>
                     </div>
                   </div>

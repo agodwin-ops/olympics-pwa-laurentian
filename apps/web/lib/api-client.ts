@@ -188,6 +188,12 @@ class ApiClient {
     });
   }
 
+  async deleteAssignment(assignmentId: string): Promise<ApiResponse<any>> {
+    return this.request(`/api/admin/assignments/${assignmentId}`, {
+      method: 'DELETE',
+    });
+  }
+
   async awardAssignmentXP(award: {
     target_user_id: string;
     assignment_id: string;
