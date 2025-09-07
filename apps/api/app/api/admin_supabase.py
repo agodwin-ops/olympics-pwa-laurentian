@@ -549,7 +549,7 @@ async def batch_register_students(
                     "id": str(uuid.uuid4()),
                     "email": student_data['email'],
                     "username": student_data['username'],
-                    "password": hashed_password,
+                    "password_hash": hashed_password,
                     "user_program": student_data['user_program'],
                     "is_admin": False,
                     "created_at": datetime.utcnow().isoformat(),
@@ -641,7 +641,7 @@ async def add_single_student(
             "id": str(uuid.uuid4()),
             "email": student_data.email,
             "username": student_data.username,
-            "password": hashed_password,
+            "password_hash": hashed_password,
             "user_program": student_data.user_program,
             "is_admin": False,
             "created_at": datetime.utcnow().isoformat(),
@@ -723,7 +723,7 @@ async def reset_student_password(
         
         # Update student's password
         service_client.table('users').update({
-            "password": hashed_password,
+            "password_hash": hashed_password,
             "updated_at": datetime.utcnow().isoformat()
         }).eq('id', student_user['id']).execute()
         
@@ -775,17 +775,25 @@ async def add_incomplete_student(
         hashed_password = pwd_context.hash(student_data.temporary_password)
         
         # Create incomplete student user (no username/program yet)
+        # Use the exact column names from the Supabase users table
         new_user = {
             "id": str(uuid.uuid4()),
             "email": student_data.email,
             "username": "",  # Will be set during profile completion
-            "password": hashed_password,
+            "password_hash": hashed_password,  # Correct column name from schema
             "user_program": "",  # Will be set during profile completion
             "is_admin": False,
             "profile_complete": False,  # Flag to track completion status
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         }
+        
+        # Extra safety: Remove any potential is_active field if it somehow got added
+        if "is_active" in new_user:
+            del new_user["is_active"]
+        
+        # Debug: print exactly what we're sending to Supabase
+        print(f"DEBUG: Inserting user data: {new_user}")
         
         user_result = service_client.table('users').insert(new_user).execute()
         user_id = user_result.data[0]['id']
