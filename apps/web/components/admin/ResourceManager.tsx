@@ -81,7 +81,7 @@ export default function ResourceManager({ currentUser, units }: ResourceManagerP
           setLectures([]);
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to load lectures:', error);
     } finally {
       setLoading(false);
@@ -150,7 +150,7 @@ export default function ResourceManager({ currentUser, units }: ResourceManagerP
       });
       alert('Lecture created successfully!');
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating lecture:', error);
       alert('Failed to create lecture. Please try again.');
     }
@@ -226,7 +226,7 @@ export default function ResourceManager({ currentUser, units }: ResourceManagerP
       setSelectedLecture('');
       alert('File uploaded successfully!');
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error uploading file:', error);
       alert('Failed to upload file. Please try again.');
     } finally {
@@ -262,7 +262,7 @@ export default function ResourceManager({ currentUser, units }: ResourceManagerP
       localStorage.setItem('admin_created_lectures', JSON.stringify(updatedLectures));
       alert('Resource deleted successfully!');
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting resource:', error);
       alert('Failed to delete resource. Please try again.');
     }
@@ -294,7 +294,7 @@ export default function ResourceManager({ currentUser, units }: ResourceManagerP
       // Store in localStorage for student access
       localStorage.setItem('admin_created_lectures', JSON.stringify(updatedLectures));
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating lecture:', error);
       alert('Failed to update lecture status. Please try again.');
     }

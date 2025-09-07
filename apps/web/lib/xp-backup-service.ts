@@ -80,7 +80,7 @@ class XPBackupService {
     try {
       console.log('XP Backup Service: Starting automatic nightly backup');
       await this.createXPSnapshot('automatic');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('XP Backup Service: Nightly backup failed:', error);
     }
   }
@@ -90,7 +90,7 @@ class XPBackupService {
     try {
       console.log('XP Backup Service: Starting manual backup');
       await this.createXPSnapshot('manual', adminId, adminUsername);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('XP Backup Service: Manual backup failed:', error);
       throw error;
     }
@@ -171,7 +171,7 @@ class XPBackupService {
     if (storedAdminStudents) {
       try {
         return JSON.parse(storedAdminStudents);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error parsing admin students data:', error);
       }
     }
@@ -226,7 +226,7 @@ class XPBackupService {
             }
           }
         ];
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error parsing current user data:', error);
       }
     }
@@ -246,7 +246,7 @@ class XPBackupService {
         ...log,
         backupDate: new Date(log.backupDate)
       }));
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error parsing backup logs:', error);
       return [];
     }
@@ -373,7 +373,7 @@ class XPBackupService {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       
       console.log(`XP Backup Service: Downloaded comprehensive CSV ${fileName} with ${studentsData.length} students`);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('XP Backup Service: Download failed:', error);
       throw error;
     }
@@ -422,7 +422,7 @@ class XPBackupService {
       document.body.removeChild(link);
       
       setTimeout(() => URL.revokeObjectURL(url), 1000);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('XP Backup Service: Backup logs download failed:', error);
       throw error;
     }

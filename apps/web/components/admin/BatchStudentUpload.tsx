@@ -144,7 +144,7 @@ export default function BatchStudentUpload({ onClose, onUploadComplete }: BatchS
               error: result.message || result.error || 'Unknown error'
             });
           }
-        } catch (error) {
+        } catch (error: unknown) {
           results.failed.push({
             email: student.email,
             error: 'Network error'
@@ -154,7 +154,7 @@ export default function BatchStudentUpload({ onClose, onUploadComplete }: BatchS
 
       onUploadComplete(results);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
       alert('Failed to process CSV file');
     }

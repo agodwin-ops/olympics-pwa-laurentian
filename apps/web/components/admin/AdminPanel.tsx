@@ -53,7 +53,7 @@ function RecentActivityLog() {
           }
         ]);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to load activity log:', error);
       // Use mock data as fallback
       setActivities([]);
@@ -166,7 +166,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
         }));
         setActivityLogs(logs);
         console.log('Loaded activity logs:', logs.length, 'entries');
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error loading activity logs:', error);
       }
     } else {
@@ -251,7 +251,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       );
 
       alert('XP backup created successfully!');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to create XP backup:', error);
       alert('Failed to create XP backup. Please try again.');
     }
@@ -266,7 +266,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
     try {
       const xpService = XPBackupService.getInstance();
       xpService.downloadXPBackup();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to download XP backup:', error);
       alert('Failed to download XP data. Please try again.');
     }
@@ -281,7 +281,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
     try {
       const xpService = XPBackupService.getInstance();
       xpService.downloadBackupLogs();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to download backup logs:', error);
       alert('Failed to download backup logs. Please try again.');
     }
@@ -362,7 +362,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       setTimeout(() => URL.revokeObjectURL(url), 1000);
       
       console.log('Download triggered successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Download error:', error);
       alert('Failed to download the activity log. Please try again.');
     }
@@ -446,7 +446,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       URL.revokeObjectURL(url);
 
       alert('Student data exported successfully!');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Export error:', error);
       alert('Failed to export student data. Please try again.');
     }
@@ -702,7 +702,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       if (!unitsResponse.success) {
         setUnits(mockUnits);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to load admin data:', error);
     } finally {
       setLoading(false);
@@ -763,7 +763,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
         throw new Error(response.error || 'Award failed');
       }
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to award:', error);
       alert('Failed to award. Please try again.');
     } finally {
@@ -787,7 +787,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       let response;
       try {
         response = await apiClient.bulkAwardStudents(apiAwards);
-      } catch (error) {
+      } catch (error: unknown) {
         // Mock success response for development
         response = { success: true, data: { message: 'Mock bulk award successful' } };
         console.log('Mock bulk award:', awards);
@@ -837,7 +837,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       );
 
       alert(`Successfully awarded ${awards.length} students!`);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Bulk award failed:', error);
       throw error;
     }
@@ -891,7 +891,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
       } else {
         throw new Error(response.error || 'Failed to create assignment');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to create assignment:', error);
       alert('Failed to create assignment. Please try again.');
     } finally {
@@ -1291,7 +1291,7 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
                                 } else {
                                   alert('Failed to delete assignment: ' + (response.error || 'Unknown error'));
                                 }
-                              } catch (error) {
+                              } catch (error: unknown) {
                                 console.error('Delete assignment error:', error);
                                 alert('Error deleting assignment. Check console for details.');
                               }

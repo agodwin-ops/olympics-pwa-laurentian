@@ -644,7 +644,7 @@ function StudentResourcesView({ user }: { user: User }) {
         ];
         setUnits(mockUnits);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to load resources:', error);
     } finally {
       setLoading(false);

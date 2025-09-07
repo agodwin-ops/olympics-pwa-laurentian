@@ -83,7 +83,7 @@ class StudentAuthBehaviorTester {
           recommendations: ['Fix localStorage persistence in OlympicsAuthContext']
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'FAIL',
@@ -134,7 +134,7 @@ class StudentAuthBehaviorTester {
           recommendations: ['Fix login system first']
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'WARNING',
@@ -175,7 +175,7 @@ class StudentAuthBehaviorTester {
           ]
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'FAIL',
@@ -211,7 +211,7 @@ class StudentAuthBehaviorTester {
           recommendations: ['Fix login system first']
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'WARNING',
@@ -252,7 +252,7 @@ class StudentAuthBehaviorTester {
           recommendations: ['Login first, then test timeout']
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'WARNING',
@@ -296,7 +296,7 @@ class StudentAuthBehaviorTester {
           recommendations: ['Complete missing batch authentication features']
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'FAIL',

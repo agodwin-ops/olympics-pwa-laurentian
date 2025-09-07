@@ -67,7 +67,7 @@ export default function BulkAwardModal({ isOpen, onClose, students, onBulkAward 
       setDescription('');
       
       onClose();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Bulk award failed:', error);
       alert('Bulk award failed. Please try again.');
     } finally {

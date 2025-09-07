@@ -81,7 +81,7 @@ export default function PasswordChangeModal({
         });
       }
       
-    } catch (error) {
+    } catch (error: unknown) {
       setResult({
         success: false,
         message: 'An error occurred while changing your password'

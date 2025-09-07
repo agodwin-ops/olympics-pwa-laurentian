@@ -328,7 +328,7 @@ class DeploymentVerificationTester {
       const response = await fetch(`${this.baseUrl}${path}`, { method });
       const endTime = performance.now();
       return { status: response.status, time: endTime - startTime };
-    } catch (error) {
+    } catch (error: unknown) {
       const endTime = performance.now();
       return { status: 0, time: endTime - startTime };
     }
@@ -338,7 +338,7 @@ class DeploymentVerificationTester {
     try {
       const response = await fetch(`${this.baseUrl}/health`);
       return { success: response.ok };
-    } catch (error) {
+    } catch (error: unknown) {
       return { success: false };
     }
   }
@@ -349,7 +349,7 @@ class DeploymentVerificationTester {
       const response = await fetch(`${this.baseUrl}/api/auth/me`);
       // 401 is expected without token - means JWT system is working
       return { success: response.status === 401 || response.ok };
-    } catch (error) {
+    } catch (error: unknown) {
       return { success: false };
     }
   }
@@ -364,7 +364,7 @@ class DeploymentVerificationTester {
         if ((stylesheet as HTMLLinkElement).sheet) {
           loadedCount++;
         }
-      } catch (error) {
+      } catch (error: unknown) {
         // Cross-origin stylesheets might throw errors but still be loaded
         loadedCount++;
       }
@@ -402,7 +402,7 @@ class DeploymentVerificationTester {
       const interLoaded = document.fonts.check('1em Inter');
       
       return { success: oswaldLoaded || interLoaded };
-    } catch (error) {
+    } catch (error: unknown) {
       return { success: true }; // Assume success if font API not available
     }
   }
@@ -418,7 +418,7 @@ class DeploymentVerificationTester {
         method: 'OPTIONS' 
       });
       return { success: true };
-    } catch (error) {
+    } catch (error: unknown) {
       return { success: false };
     }
   }
@@ -466,7 +466,7 @@ class DeploymentVerificationTester {
         method: 'OPTIONS'
       });
       return { success: response.status < 500 };
-    } catch (error) {
+    } catch (error: unknown) {
       return { success: false };
     }
   }

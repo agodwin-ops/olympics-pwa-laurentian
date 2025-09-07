@@ -49,7 +49,7 @@ class OlympicsWebSocketClient {
       this.ws.onclose = this.handleClose.bind(this);
       this.ws.onerror = this.handleError.bind(this);
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to create WebSocket connection:', error);
       this.scheduleReconnect();
     }
@@ -146,7 +146,7 @@ class OlympicsWebSocketClient {
         this.options.onMessage(message);
       }
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error parsing WebSocket message:', error);
     }
   }
