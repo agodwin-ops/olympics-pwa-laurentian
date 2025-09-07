@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useOlympicsAuth } from '@/contexts/OlympicsAuthContext';
+import apiClient from '@/lib/api-client';
 
 interface ProfileForm {
   username: string;
@@ -41,22 +42,19 @@ export default function ProfileSetupPage() {
     setLoading(true);
     
     try {
-      // Call API to complete profile
-      const response = await fetch('/api/auth/complete-profile', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: form.username,
-          user_program: form.userProgram,
-          profile_picture: form.profilePicture ? await fileToBase64(form.profilePicture) : null
-        })
+      // Use API client for consistent authentication
+      let profilePictureUrl: string | undefined = undefined;
+      if (form.profilePicture) {
+        profilePictureUrl = await fileToBase64(form.profilePicture);
+      }
+
+      const result = await apiClient.completeProfile({
+        username: form.username,
+        user_program: form.userProgram,
+        profile_picture_url: profilePictureUrl
       });
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
+      if (result.success) {
         // Update local user context if updateProfile exists
         if (updateProfile) {
           // Convert File to data URL if present

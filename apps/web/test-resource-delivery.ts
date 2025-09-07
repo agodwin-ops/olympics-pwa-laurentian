@@ -388,9 +388,9 @@ class ResourceDeliveryTester {
       // Try actual upload (will fail in development)
       const result = await apiClient.uploadFileToLecture('test-lecture', file, 'Test upload');
       return { success: result.success };
-    } catch (error) {
+    } catch (error: unknown) {
       // Check if it's a development mode graceful failure
-      if (error.toString().includes('API not available') || error.toString().includes('mock')) {
+      if (error instanceof Error && (error.toString().includes('API not available') || error.toString().includes('mock'))) {
         return { success: false, mockSuccess: true };
       }
       return { success: false };
