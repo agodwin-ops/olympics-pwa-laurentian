@@ -97,7 +97,7 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<boolean | string> => {
     try {
       const response = await apiClient.login(email, password);
 
