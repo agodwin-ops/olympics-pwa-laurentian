@@ -19,9 +19,13 @@ export default function HomePage() {
     setAdminError('');
 
     try {
-      const success = await login(adminForm.email, adminForm.password);
-      if (success) {
+      const result = await login(adminForm.email, adminForm.password);
+      if (result === true) {
+        // Admin login successful - go to dashboard
         router.push('/dashboard');
+      } else if (result === 'incomplete-profile') {
+        // Admins should not have incomplete profiles - this is an error
+        setAdminError('Admin account configuration error. Contact system administrator.');
       } else {
         setAdminError('Invalid admin credentials');
       }

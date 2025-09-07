@@ -115,9 +115,9 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
         setUser(userData);
         localStorage.setItem('olympics_user', JSON.stringify(userData));
         
-        // Check if profile needs completion  
-        if (userData.profileComplete === false) {
-          // Redirect to profile setup will be handled by the login page
+        // Check if profile needs completion (only for students)
+        if (userData.profileComplete === false && !userData.isAdmin) {
+          // Batch students need to complete profile - redirect to profile setup
           return 'incomplete-profile';
         }
         

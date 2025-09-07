@@ -24,9 +24,13 @@ export default function StudentLoginPage() {
 
     try {
       // Use email for login (batch authentication system)
-      const success = await login(form.email, form.password);
-      if (success) {
+      const result = await login(form.email, form.password);
+      if (result === true) {
+        // Complete profile - go to dashboard
         router.push('/dashboard');
+      } else if (result === 'incomplete-profile') {
+        // Batch student needs to complete profile - redirect to profile setup
+        router.push('/profile-setup');
       } else {
         setError('Login failed. Please check your credentials or contact your instructor.');
       }
@@ -116,31 +120,33 @@ export default function StudentLoginPage() {
                 <div className="ml-3">
                   <p className="text-sm text-blue-800">
                     {isFirstTime 
-                      ? 'Use the username, email, and password provided by your instructor for your first login.'
-                      : 'Enter the same credentials you used to access the Olympic game before.'
+                      ? 'Use the email and password provided by your instructor. You will choose your username and setup your profile after login.'
+                      : 'Enter the same email, username, and password you used to access the Olympic game before.'
                     }
                   </p>
                 </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Username
-              </label>
-              <input
-                type="text"
-                name="username"
-                required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olympic-blue focus:border-olympic-blue"
-                placeholder="Enter your class username"
-                value={form.username}
-                onChange={handleInputChange}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Username provided by your instructor
-              </p>
-            </div>
+            {!isFirstTime && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  name="username"
+                  required={!isFirstTime}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-olympic-blue focus:border-olympic-blue"
+                  placeholder="Enter your chosen username"
+                  value={form.username}
+                  onChange={handleInputChange}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  The username you chose during profile setup
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
