@@ -70,7 +70,7 @@ class ApiClient {
       }
 
       return data;
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`API Error [${endpoint}]:`, error);
       return {
         success: false,

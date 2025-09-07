@@ -133,17 +133,17 @@ export default function SimpleStudentUpload({ onClose, onUploadComplete }: Simpl
               error: response.error || 'Unknown error'
             });
           }
-        } catch (error) {
+        } catch (error: unknown) {
           results.failed.push({
             email: student.email,
-            error: 'Network error'
+            error: error instanceof Error ? error.message : 'Network error'
           });
         }
       }
 
       onUploadComplete(results);
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
       alert('Failed to process CSV file');
     }

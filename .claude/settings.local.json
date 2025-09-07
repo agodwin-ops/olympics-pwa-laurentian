@@ -15,7 +15,8 @@
       "Bash(source:*)",
       "Bash(hypercorn:*)",
       "Bash(uvicorn:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(/dev/null)"
     ],
     "deny": [],
     "ask": []

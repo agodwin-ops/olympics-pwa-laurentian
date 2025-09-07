@@ -107,7 +107,7 @@ function DashboardView({ user, userProgress }: DashboardViewProps) {
         
         return; // Exit early if API calls succeed
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to load player data:', error);
     }
 

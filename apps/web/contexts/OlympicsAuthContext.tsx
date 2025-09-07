@@ -86,7 +86,7 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
         apiClient.setToken(null);
         setUser(null);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Auth check failed:', error);
       // Clear potentially corrupted auth data
       localStorage.removeItem('olympics_user');
@@ -195,7 +195,7 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
   const initializePlayerData = async (userId: string) => {
     try {
       await apiClient.initializePlayerData(userId);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to initialize player data:', error);
     }
   };
