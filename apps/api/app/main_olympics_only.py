@@ -74,7 +74,9 @@ if ENVIRONMENT == "production":
         "https://*.onrender.com",
         "https://*.vercel.app", 
         "https://*.netlify.app",
-        "https://olympics-pwa-frontend-2024.vercel.app"  # Specific frontend domain
+        "https://olympics-pwa-frontend-2024.vercel.app",  # Original frontend domain
+        "https://olympics-pwa-laurentian-2025-p1rkhek41-alison-godwins-projects.vercel.app",  # New frontend domain
+        "https://olympics-pwa-laurentian-2025.vercel.app"  # Shortened version if available
     ])
     
     # Fallback if no origins specified
