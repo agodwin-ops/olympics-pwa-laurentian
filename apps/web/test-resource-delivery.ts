@@ -95,11 +95,11 @@ class ResourceDeliveryTester {
             schoolReadyScore: 6
           });
         }
-      } catch (error) {
+      } catch (error: unknown) {
         this.results.push({
           testName,
           status: 'FAIL',
-          details: `File upload test failed: ${error}`,
+          details: `File upload test failed: ${error instanceof Error ? error.message : String(error)}`,
           recommendations: [
             'Debug upload implementation',
             'Check API endpoint configuration',
@@ -108,11 +108,11 @@ class ResourceDeliveryTester {
           schoolReadyScore: 3
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'FAIL',
-        details: `Upload test failed: ${error}`,
+        details: `Upload test failed: ${error instanceof Error ? error.message : String(error)}`,
         recommendations: ['Implement basic file upload system'],
         schoolReadyScore: 1
       });
@@ -180,11 +180,11 @@ class ResourceDeliveryTester {
           schoolReadyScore: Math.max(overallScore, 5)
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'FAIL',
-        details: `File size testing failed: ${error}`,
+        details: `File size testing failed: ${error instanceof Error ? error.message : String(error)}`,
         recommendations: ['Implement file size validation and limits'],
         schoolReadyScore: 3
       });
@@ -238,11 +238,11 @@ class ResourceDeliveryTester {
           schoolReadyScore: 3
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'FAIL',
-        details: `Permission testing failed: ${error}`,
+        details: `Permission testing failed: ${error instanceof Error ? error.message : String(error)}`,
         recommendations: ['Implement basic file access controls'],
         schoolReadyScore: 2
       });
@@ -303,7 +303,7 @@ class ResourceDeliveryTester {
           schoolReadyScore: 3
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'WARNING',
@@ -367,7 +367,7 @@ class ResourceDeliveryTester {
           schoolReadyScore: 3
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.results.push({
         testName,
         status: 'WARNING',
@@ -457,7 +457,7 @@ class ResourceDeliveryTester {
       
       const results = await Promise.all(promises);
       return { success: results.length === 10 };
-    } catch (error) {
+    } catch (error: unknown) {
       return { success: false, partialSuccess: true };
     }
   }
