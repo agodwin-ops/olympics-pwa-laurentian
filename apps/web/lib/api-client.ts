@@ -318,7 +318,7 @@ class ApiClient {
     user_program: string;
     profile_picture_url?: string;
   }): Promise<ApiResponse<any>> {
-    return this.request('/api/students/me/complete-profile', {
+    return this.request('/api/auth/complete-profile', {
       method: 'POST',
       body: JSON.stringify(profileData),
     });
