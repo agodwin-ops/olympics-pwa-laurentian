@@ -17,7 +17,10 @@ function transformApiUserToFrontendUser(apiUser: any): User {
       user_program: apiUser.user_program,
       is_admin: apiUser.is_admin
     });
-    if (apiUser.user_program === 'Course Instructor' || apiUser.email === 'instructor@olympics.com') {
+    if (apiUser.user_program === 'Primary Instructor' || 
+        apiUser.user_program === 'Course Instructor' || 
+        apiUser.email === 'agodwin@laurentian.ca' || 
+        apiUser.email === 'mcuza@laurentian.ca') {
       adminRole = 'Primary Instructor';
       console.log('Assigned Primary Instructor role');
     } else {
