@@ -55,6 +55,8 @@ class ApiClient {
         ...options,
       };
 
+      console.log(`API Request: ${config.method || 'GET'} ${url}`);
+      
       const response = await fetch(url, config);
       
       if (response.status === 401) {
@@ -72,9 +74,20 @@ class ApiClient {
       return data;
     } catch (error: unknown) {
       console.error(`API Error [${endpoint}]:`, error);
+      
+      // Provide helpful error messages for mobile users
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) {
+        if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
+          errorMessage = 'Network connection failed. On mobile, make sure you\'re connected to the same WiFi network as the server.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: errorMessage
       };
     }
   }

@@ -407,7 +407,7 @@ export default function OnboardingPage() {
               🏔️ Already have an account?
             </p>
             <Link 
-              href="/login" 
+              href="/" 
               className="inline-flex items-center px-6 py-2 text-olympic-blue hover:text-white hover:bg-olympic-blue border-2 border-olympic-blue rounded-lg transition-all font-oswald font-semibold"
             >
               Sign In Here
