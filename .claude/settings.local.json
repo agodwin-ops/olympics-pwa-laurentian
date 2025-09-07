@@ -14,7 +14,8 @@
       "Bash(npm run dev:*)",
       "Bash(source:*)",
       "Bash(hypercorn:*)",
-      "Bash(uvicorn:*)"
+      "Bash(uvicorn:*)",
+      "Bash(npx tsc:*)"
     ],
     "deny": [],
     "ask": []

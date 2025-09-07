@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthContextType, RegisterForm } from '@/types/olympics';
 import apiClient from '@/lib/api-client';
+import type { ApiResponse } from '@/lib/api-client';
 
 const OlympicsAuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -202,7 +203,7 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
   const updateProfile = async (profileData: { username: string; userProgram: string; profilePicture?: string }): Promise<boolean> => {
     try {
       // Use the completeProfile method from ApiClient
-      const response = await apiClient.completeProfile({
+      const response: ApiResponse<any> = await apiClient.completeProfile({
         username: profileData.username,
         user_program: profileData.userProgram,
         profile_picture_url: profileData.profilePicture
