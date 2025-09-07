@@ -521,16 +521,38 @@ async def batch_register_students(
         
         successful_registrations = []
         failed_registrations = []
+        used_usernames = set()  # Track usernames used in this batch
         
         for student_data in batch_data.students:
             try:
-                # Validate required fields
-                if not all(k in student_data for k in ['email', 'username', 'user_program']):
+                # Validate required fields (email and user_program are required, username can be generated)
+                if not all(k in student_data for k in ['email', 'user_program']):
                     failed_registrations.append({
                         "email": student_data.get('email', 'Unknown'),
-                        "error": "Missing required fields (email, username, user_program)"
+                        "error": "Missing required fields (email, user_program)"
                     })
                     continue
+                
+                # Generate username if missing or empty
+                username = student_data.get('username', '').strip()
+                if not username:
+                    # Generate username from email: user@laurentian.ca -> user_laurentian
+                    email_local = student_data['email'].split('@')[0]
+                    email_domain = student_data['email'].split('@')[1].split('.')[0] if '@' in student_data['email'] else 'user'
+                    base_username = f"{email_local}_{email_domain}"
+                    
+                    # Check if username exists and make it unique (both in database and current batch)
+                    username = base_username
+                    counter = 1
+                    while True:
+                        existing_username = service_client.table('users').select('*').eq('username', username).execute()
+                        if not existing_username.data and username not in used_usernames:
+                            break
+                        username = f"{base_username}_{counter}"
+                        counter += 1
+                
+                # Add username to used set
+                used_usernames.add(username)
                 
                 # Check if student already exists
                 existing_user = service_client.table('users').select('*').eq('email', student_data['email']).execute()
@@ -548,7 +570,7 @@ async def batch_register_students(
                 new_user = {
                     "id": str(uuid.uuid4()),
                     "email": student_data['email'],
-                    "username": student_data['username'],
+                    "username": username,
                     "password_hash": hashed_password,
                     "user_program": student_data['user_program'],
                     "is_admin": False,
@@ -580,7 +602,7 @@ async def batch_register_students(
                 
                 successful_registrations.append({
                     "email": student_data['email'],
-                    "username": student_data['username'],
+                    "username": username,
                     "user_id": user_id,
                     "temporary_password": batch_data.default_password
                 })
