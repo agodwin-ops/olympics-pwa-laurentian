@@ -783,7 +783,6 @@ async def add_incomplete_student(
             "password_hash": hashed_password,  # Correct column name from schema
             "user_program": "",  # Will be set during profile completion
             "is_admin": False,
-            "profile_complete": False,  # Flag to track completion status
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
         }

@@ -669,9 +669,8 @@ export default function OlympicGameboard({
           <div 
             className="relative w-full bg-gradient-to-br from-blue-100 to-white rounded-xl border-2 border-olympic-blue shadow-lg"
             style={{ 
-              minHeight: '450px',
-              height: 'calc(100vh - 180px)',
-              maxHeight: '650px'
+              minHeight: '350px',
+              height: 'clamp(350px, 60vh, 650px)'
             }}
           >
             {/* Gameboard path/trail */}
@@ -848,7 +847,7 @@ export default function OlympicGameboard({
                   onClick={() => isAccessible && handlePositionClick(spot.id, false)}
                 >
                   <div
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-xs sm:text-sm font-bold shadow-md transition-all ${
+                    className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center text-xs sm:text-sm font-bold shadow-md transition-all ${
                       isCompletedOnPath ? 'bg-red-500 border-red-600 text-white' :
                       isCurrentPosition ? 'bg-canada-red border-canada-red text-white animate-pulse' :
                       isNextSpot ? 'bg-olympic-yellow border-olympic-yellow text-white animate-bounce' :
@@ -988,7 +987,7 @@ export default function OlympicGameboard({
       
       {selectedChallengeSpot && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl">
             {/* Header */}
             <div className="sticky top-0 bg-olympic-blue text-white p-3 sm:p-4 rounded-t-lg">
               <div className="flex justify-between items-center">

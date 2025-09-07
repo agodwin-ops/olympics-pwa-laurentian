@@ -244,8 +244,8 @@ async def complete_profile(
     """Complete user profile after first login with pre-set credentials"""
     
     try:
-        # Check if profile is already complete
-        if current_user.get('profile_complete', True):
+        # Check if profile is already complete (check for non-empty username/program)
+        if current_user.get('username') and current_user.get('user_program'):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Profile is already complete"
@@ -263,7 +263,6 @@ async def complete_profile(
         user_updates = {
             "username": profile_data.username,
             "user_program": profile_data.user_program,
-            "profile_complete": True,
             "updated_at": datetime.utcnow().isoformat()
         }
         
@@ -327,8 +326,7 @@ async def complete_profile(
             "message": "Profile completed successfully",
             "data": {
                 "username": profile_data.username,
-                "user_program": profile_data.user_program,
-                "profile_complete": True
+                "user_program": profile_data.user_program
             }
         }
         

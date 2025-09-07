@@ -1,64 +1,39 @@
-# Mobile Development Setup
+# Olympics PWA Mobile Access
 
-## Issue: "Failed to fetch" on Mobile
+## Production Access (Recommended)
 
-Mobile devices cannot connect to `localhost:8080` because localhost refers to the mobile device itself, not your development machine.
+Students should access the deployed Olympics PWA at the Vercel URL provided by the instructor. The PWA is designed to work on all mobile devices through the browser.
 
-## Solution: Use Your Machine's IP Address
+## Mobile Issues Troubleshooting
 
-### 1. Find Your Machine's IP Address
+If you encounter "Failed to fetch" errors on mobile:
 
-#### On Linux/macOS:
-```bash
-ip addr show | grep "inet " | grep -v 127.0.0.1
-# OR
-ifconfig | grep "inet " | grep -v 127.0.0.1
-```
+1. **Check your internet connection** - Ensure you have a stable internet connection
+2. **Verify the URL** - Make sure you're accessing the correct Vercel deployment URL
+3. **Try refreshing** - Close and reopen the browser/tab
+4. **Check with instructor** - Verify the correct Vercel URL and ensure backend services are running
 
-#### On Windows:
-```cmd
-ipconfig | findstr "IPv4"
-```
+## Known Issues
 
-Look for an IP address like `192.168.1.100` or `10.0.0.50`
+### Backend Connection Errors
+**IMPORTANT**: The deployed PWA requires a backend API to function. If you see "Failed to fetch" errors:
 
-### 2. Update Environment Variables
+**For Instructors:**
+- The backend needs to be deployed to Render first
+- Follow the deployment guide in `/DEPLOYMENT.md`
+- Ensure environment variables are configured on Render
+- Update the frontend's production environment to point to your deployed backend
 
-Edit `apps/web/.env.local`:
-```bash
-# Replace localhost with your machine's IP
-NEXT_PUBLIC_API_BASE_URL=http://YOUR_IP_ADDRESS:8080
-NEXT_PUBLIC_WS_BASE=ws://YOUR_IP_ADDRESS:8080
-```
+**For Students:**
+- Contact your instructor if you encounter connection errors
+- The backend service may be starting up - wait 1-2 minutes and refresh
 
-Example:
-```bash
-NEXT_PUBLIC_API_BASE_URL=http://192.168.1.100:8080
-NEXT_PUBLIC_WS_BASE=ws://192.168.1.100:8080
-```
+### PWA Installation
+To install as a PWA on mobile:
+1. Open the URL in mobile browser
+2. Look for "Add to Home Screen" option
+3. Follow browser prompts to install
 
-### 3. Restart Development Servers
+## For Developers Only
 
-```bash
-# Restart frontend
-npm run dev
-
-# Backend should already be accessible on all interfaces (0.0.0.0:8080)
-```
-
-### 4. Access on Mobile
-
-- **Frontend**: http://YOUR_IP_ADDRESS:3000
-- **API**: http://YOUR_IP_ADDRESS:8080
-
-### 5. Production Deployment
-
-For production, this is handled automatically:
-- **Vercel Frontend**: Uses production API URL via environment variables
-- **Render Backend**: Accessible via public URL
-
-## Troubleshooting
-
-- Ensure both devices are on the same WiFi network
-- Check firewall settings on your development machine
-- Verify backend is running with `--host 0.0.0.0` (already configured)
+If you need to run a local development version (not recommended for students):

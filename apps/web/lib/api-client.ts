@@ -75,11 +75,11 @@ class ApiClient {
     } catch (error: unknown) {
       console.error(`API Error [${endpoint}]:`, error);
       
-      // Provide helpful error messages for mobile users
+      // Provide helpful error messages  
       let errorMessage = 'Unknown error';
       if (error instanceof Error) {
         if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
-          errorMessage = 'Network connection failed. On mobile, make sure you\'re connected to the same WiFi network as the server.';
+          errorMessage = 'Unable to connect to the Olympics PWA server. Please check your internet connection and try again. If the issue persists, the server may be starting up (wait 1-2 minutes).';
         } else {
           errorMessage = error.message;
         }
