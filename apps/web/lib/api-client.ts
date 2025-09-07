@@ -313,6 +313,17 @@ class ApiClient {
   }
 
   // Student endpoints
+  async completeProfile(profileData: {
+    username: string;
+    user_program: string;
+    profile_picture_url?: string;
+  }): Promise<ApiResponse<any>> {
+    return this.request('/api/students/me/complete-profile', {
+      method: 'POST',
+      body: JSON.stringify(profileData),
+    });
+  }
+
   async changePassword(passwords: {
     current_password: string;
     new_password: string;

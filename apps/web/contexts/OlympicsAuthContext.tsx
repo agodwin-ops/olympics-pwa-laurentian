@@ -201,7 +201,7 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
 
   const updateProfile = async (profileData: { username: string; userProgram: string; profilePicture?: string }): Promise<boolean> => {
     try {
-      const response = await apiClient.post('/api/students/me/complete-profile', {
+      const response = await apiClient.completeProfile({
         username: profileData.username,
         user_program: profileData.userProgram,
         profile_picture_url: profileData.profilePicture
