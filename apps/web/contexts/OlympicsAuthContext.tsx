@@ -55,46 +55,80 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
 
   const checkAuthStatus = async () => {
     try {
-      // Check for existing JWT token
-      const storedToken = localStorage.getItem('olympics_auth_token');
+      console.log('🔍 PWA Session Recovery: Checking for existing authentication...');
+      
+      // Check multiple storage locations for better mobile PWA persistence
+      const storedToken = localStorage.getItem('olympics_auth_token') || 
+                         sessionStorage.getItem('olympics_auth_token');
+      const storedUser = localStorage.getItem('olympics_user') || 
+                        sessionStorage.getItem('olympics_user');
       
       if (storedToken) {
-        console.log('Found stored token, validating with server...');
+        console.log('✅ Found stored token, validating with server...');
         
         // Set token for API client
         apiClient.setToken(storedToken);
         
-        // Validate token with server and get current user data
-        const response = await apiClient.getCurrentUser();
-        
-        if (response.success && response.data) {
-          console.log('Token valid, user authenticated:', response.data);
+        try {
+          // Validate token with server and get current user data
+          const response = await apiClient.getCurrentUser();
           
-          // Transform API response to match frontend User type
-          const userData = transformApiUserToFrontendUser(response.data);
-          setUser(userData);
+          if (response.success && response.data) {
+            console.log('✅ Token valid, user authenticated:', response.data.email || response.data.username);
+            
+            // Transform API response to match frontend User type
+            const userData = transformApiUserToFrontendUser(response.data);
+            setUser(userData);
+            
+            // Store in both localStorage and sessionStorage for redundancy
+            const userDataString = JSON.stringify(userData);
+            localStorage.setItem('olympics_user', userDataString);
+            localStorage.setItem('olympics_auth_token', storedToken);
+            sessionStorage.setItem('olympics_user', userDataString);
+            sessionStorage.setItem('olympics_auth_token', storedToken);
+            
+            console.log('🎯 PWA Session Recovery: Successfully restored user session');
+          } else {
+            throw new Error('Token validation failed');
+          }
+        } catch (apiError) {
+          console.log('❌ Token invalid or expired, checking for cached user data...');
           
-          // Update localStorage with transformed user data
-          localStorage.setItem('olympics_user', JSON.stringify(userData));
-        } else {
-          console.log('Token invalid or expired, clearing auth data');
-          // Token is invalid or expired, clear everything
+          // If API call fails but we have cached user data, try to use it temporarily
+          if (storedUser) {
+            try {
+              const userData = JSON.parse(storedUser);
+              console.log('⚠️ Using cached user data (offline mode):', userData.email || userData.username);
+              setUser(userData);
+              
+              // Keep the token in case network comes back
+              return;
+            } catch (parseError) {
+              console.log('❌ Cached user data corrupted');
+            }
+          }
+          
+          // Clear everything if token is invalid and no valid cache
           localStorage.removeItem('olympics_user');
           localStorage.removeItem('olympics_auth_token');
+          sessionStorage.removeItem('olympics_user');
+          sessionStorage.removeItem('olympics_auth_token');
           apiClient.setToken(null);
           setUser(null);
         }
       } else {
-        console.log('No stored token found');
+        console.log('❌ No stored token found - user needs to login');
         // No token found, user needs to login
         apiClient.setToken(null);
         setUser(null);
       }
     } catch (error: unknown) {
-      console.error('Auth check failed:', error);
+      console.error('❌ PWA Session Recovery failed:', error);
       // Clear potentially corrupted auth data
       localStorage.removeItem('olympics_user');
       localStorage.removeItem('olympics_auth_token');
+      sessionStorage.removeItem('olympics_user');
+      sessionStorage.removeItem('olympics_auth_token');
       apiClient.setToken(null);
       setUser(null);
     } finally {
@@ -109,16 +143,23 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
       if (response.success && response.data) {
         console.log('Login successful:', response.data);
         
-        // Store authentication token for session persistence
+        // Store authentication token for session persistence (multiple storage methods)
         if (response.data.access_token) {
           localStorage.setItem('olympics_auth_token', response.data.access_token);
+          sessionStorage.setItem('olympics_auth_token', response.data.access_token);
           apiClient.setToken(response.data.access_token);
+          console.log('🔐 PWA Session: Token stored in both localStorage and sessionStorage');
         }
         
         // Transform and set user data
         const userData = transformApiUserToFrontendUser(response.data.user);
         setUser(userData);
-        localStorage.setItem('olympics_user', JSON.stringify(userData));
+        
+        // Store user data in both storage methods for PWA persistence
+        const userDataString = JSON.stringify(userData);
+        localStorage.setItem('olympics_user', userDataString);
+        sessionStorage.setItem('olympics_user', userDataString);
+        console.log('👤 PWA Session: User data stored for:', userData.email);
         
         // Check if profile needs completion (students with temporary usernames or incomplete profiles)
         if (!userData.isAdmin) {
@@ -190,16 +231,23 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
       if (response.success && response.data) {
         console.log('Registration successful:', response.data);
         
-        // Store authentication token for session persistence
+        // Store authentication token for session persistence (multiple storage methods)
         if (response.data.access_token) {
           localStorage.setItem('olympics_auth_token', response.data.access_token);
+          sessionStorage.setItem('olympics_auth_token', response.data.access_token);
           apiClient.setToken(response.data.access_token);
+          console.log('🔐 PWA Registration: Token stored in both storage methods');
         }
         
         // Transform and set user data
         const userData = transformApiUserToFrontendUser(response.data.user);
         setUser(userData);
-        localStorage.setItem('olympics_user', JSON.stringify(userData));
+        
+        // Store user data in both storage methods for PWA persistence
+        const userDataString = JSON.stringify(userData);
+        localStorage.setItem('olympics_user', userDataString);
+        sessionStorage.setItem('olympics_user', userDataString);
+        console.log('👤 PWA Registration: User data stored for:', userData.email);
         
         // Initialize player data
         if (response.data.user && response.data.user.id) {
@@ -250,12 +298,14 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
   };
 
   const logout = () => {
-    console.log('Logging out user');
+    console.log('🚪 PWA Session: Logging out user');
     setUser(null);
     
-    // Clear authentication data
+    // Clear authentication data from both storage methods
     localStorage.removeItem('olympics_user');
     localStorage.removeItem('olympics_auth_token');
+    sessionStorage.removeItem('olympics_user');
+    sessionStorage.removeItem('olympics_auth_token');
     
     // Clear admin-specific data to prevent cross-session contamination
     localStorage.removeItem('admin_created_lectures');
@@ -267,6 +317,7 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
     xpService.stopNightlyBackups();
     
     apiClient.logout();
+    console.log('✅ PWA Session: All authentication data cleared');
     window.location.href = '/';
   };
 

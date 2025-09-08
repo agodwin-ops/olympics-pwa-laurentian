@@ -40,11 +40,14 @@ async def get_my_profile(current_student = Depends(require_student)):
         # Get student's player stats
         stats_response = service_client.table('player_stats').select('*').eq('user_id', current_student['id']).execute()
         
+        print(f"🔍 Stats query for user {current_student['id']}: found {len(stats_response.data) if stats_response.data else 0} records")
+        
         # Get student's XP entries
         xp_response = service_client.table('xp_entries').select('*').eq('user_id', current_student['id']).order('created_at', desc=True).limit(10).execute()
         
         # If no stats exist, create initial stats
         if not stats_response.data:
+            print(f"📝 Creating new player stats for user {current_student['id']} ({current_student['username']})")
             initial_stats = {
                 "id": str(uuid.uuid4()),
                 "user_id": current_student['id'],
@@ -54,7 +57,7 @@ async def get_my_profile(current_student = Depends(require_student)):
                 "current_rank": 0,
                 "gameboard_xp": 0,
                 "gameboard_position": 1,
-                "gameboard_moves": 0,
+                "gameboard_moves": 3,  # Starting moves - FIXED
                 "gold": 3,  # Starting gold
                 "unit_xp": {},
                 "created_at": datetime.utcnow().isoformat(),
@@ -63,8 +66,10 @@ async def get_my_profile(current_student = Depends(require_student)):
             
             create_result = service_client.table('player_stats').insert(initial_stats).execute()
             stats = create_result.data[0] if create_result.data else initial_stats
+            print(f"✅ Created player stats: moves={stats.get('gameboard_moves')}, gold={stats.get('gold')}")
         else:
             stats = stats_response.data[0]
+            print(f"🎯 Loaded existing stats for {current_student['username']}: moves={stats.get('gameboard_moves')}, gold={stats.get('gold')}, position={stats.get('gameboard_position')}")
             
         # Transform snake_case to camelCase for frontend compatibility
         stats_camelcase = {
