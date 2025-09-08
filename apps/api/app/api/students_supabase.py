@@ -351,3 +351,135 @@ async def get_my_health(current_student = Depends(require_student)):
         "username": current_student['username'],
         "email": current_student['email']
     }
+
+@router.post("/gameboard/roll-dice")
+async def roll_dice(
+    dice_data: dict,
+    current_student = Depends(require_student)
+):
+    """Roll dice for gameboard gameplay"""
+    try:
+        from app.core.supabase_client import get_supabase_auth_client
+        import random
+        from datetime import datetime
+        
+        service_client = get_supabase_auth_client()
+        
+        # Extract dice roll parameters
+        station_id = dice_data.get('station_id')
+        skill_level = dice_data.get('skill_level', 1)
+        success_chance = dice_data.get('success_chance', 50)
+        
+        # Generate dice roll result
+        roll_result = dice_data.get('roll_result', random.randint(1, 100))
+        was_successful = roll_result <= success_chance
+        
+        # Get current player stats
+        stats_result = service_client.table('player_stats').select('*').eq('user_id', current_student['id']).execute()
+        
+        if not stats_result.data:
+            raise HTTPException(status_code=404, detail="Player stats not found")
+        
+        current_stats = stats_result.data[0]
+        current_moves = current_stats.get('gameboard_moves', 0)
+        
+        # Check if student has moves available
+        if current_moves <= 0:
+            return {
+                "success": False,
+                "error": "No moves available",
+                "data": {
+                    "roll_result": roll_result,
+                    "was_successful": False,
+                    "moves_remaining": 0
+                }
+            }
+        
+        # Calculate rewards based on success
+        xp_gained = 0
+        gold_gained = 0
+        
+        if was_successful:
+            # Base rewards for successful roll
+            xp_gained = skill_level * 10 + random.randint(5, 15)
+            gold_gained = random.randint(1, 5)
+            
+            # Bonus for higher skill levels
+            if skill_level >= 3:
+                xp_gained += 10
+                gold_gained += 2
+        else:
+            # Small consolation rewards
+            xp_gained = random.randint(1, 5)
+            gold_gained = 0
+        
+        # Update player stats
+        new_moves = current_moves - 1
+        new_total_xp = current_stats.get('total_xp', 0) + xp_gained
+        new_current_xp = current_stats.get('current_xp', 0) + xp_gained
+        new_level = max(1, new_total_xp // 200 + 1)
+        new_gold = current_stats.get('gold', 0) + gold_gained
+        new_gameboard_xp = current_stats.get('gameboard_xp', 0) + xp_gained
+        
+        # Update database
+        update_data = {
+            "gameboard_moves": new_moves,
+            "total_xp": new_total_xp,
+            "current_xp": new_current_xp,
+            "current_level": new_level,
+            "gold": new_gold,
+            "gameboard_xp": new_gameboard_xp,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        service_client.table('player_stats').update(update_data).eq('user_id', current_student['id']).execute()
+        
+        # Create XP entry for tracking
+        if xp_gained > 0:
+            xp_entry = {
+                "id": str(uuid.uuid4()),
+                "user_id": current_student['id'],
+                "assignment_id": None,
+                "assignment_name": f"Gameboard Station {station_id}",
+                "unit_id": None,
+                "xp_amount": xp_gained,
+                "awarded_by": current_student['id'],  # Self-awarded through gameplay
+                "description": f"Dice roll reward - {'Success' if was_successful else 'Attempt'}",
+                "created_at": datetime.utcnow().isoformat()
+            }
+            
+            try:
+                service_client.table('xp_entries').insert(xp_entry).execute()
+            except Exception as e:
+                print(f"Warning: Could not log XP entry: {e}")
+        
+        return {
+            "success": True,
+            "data": {
+                "roll_result": roll_result,
+                "was_successful": was_successful,
+                "success_chance": success_chance,
+                "skill_level": skill_level,
+                "station_id": station_id,
+                "rewards": {
+                    "xp_gained": xp_gained,
+                    "gold_gained": gold_gained
+                },
+                "updated_stats": {
+                    "moves_remaining": new_moves,
+                    "total_xp": new_total_xp,
+                    "current_level": new_level,
+                    "gold": new_gold,
+                    "gameboard_xp": new_gameboard_xp
+                }
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Roll dice error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )

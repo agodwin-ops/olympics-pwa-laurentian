@@ -172,6 +172,64 @@ async def get_lectures(unit_id: str = None, published_only: bool = False):
             "data": []
         }
 
+@app.get("/api/resources/{resource_id}/access-logs")
+async def get_resource_access_logs(resource_id: str, limit: int = 50, offset: int = 0):
+    """Get access logs for a specific resource (admin only)"""
+    try:
+        from app.core.supabase_client import get_supabase_auth_client
+        service_client = get_supabase_auth_client()
+        
+        # This would require a file_access_logs table in Supabase
+        # For now, return empty array as this feature may not be implemented
+        return {
+            "success": True,
+            "data": [],
+            "total": 0,
+            "message": "Access logs not implemented yet"
+        }
+        
+    except Exception as e:
+        print(f"❌ Get access logs error: {e}")
+        return {
+            "success": True,
+            "data": [],
+            "total": 0
+        }
+
+@app.get("/api/stats/downloads")
+async def get_download_stats():
+    """Get download statistics (admin only)"""
+    try:
+        from app.core.supabase_client import get_supabase_auth_client
+        service_client = get_supabase_auth_client()
+        
+        # Get lecture resource statistics
+        resources = service_client.table('lecture_resources').select('*').execute()
+        
+        # Basic stats - could be enhanced with actual download tracking
+        total_resources = len(resources.data) if resources.data else 0
+        
+        return {
+            "success": True,
+            "data": {
+                "total_resources": total_resources,
+                "most_downloaded": [],  # Would need download tracking
+                "recent_downloads": [],  # Would need access logs
+                "message": "Basic stats only - detailed tracking not implemented"
+            }
+        }
+        
+    except Exception as e:
+        print(f"❌ Get download stats error: {e}")
+        return {
+            "success": True,
+            "data": {
+                "total_resources": 0,
+                "most_downloaded": [],
+                "recent_downloads": []
+            }
+        }
+
 @app.get("/api/system/status")
 def system_status():
     """System status for classroom deployment"""

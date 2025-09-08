@@ -335,3 +335,100 @@ async def complete_profile(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+@router.get("/check-admin-code")
+async def check_admin_code(code: str):
+    """Check if provided code is a valid admin code"""
+    try:
+        # Simple admin code validation - could be made configurable
+        valid_admin_codes = [
+            "OLYMPICS_ADMIN_2024",
+            "WINTER_GAMES_ADMIN", 
+            "COACH_ACCESS",
+            "TEACHER_LOGIN"
+        ]
+        
+        if code in valid_admin_codes:
+            return {
+                "success": True,
+                "valid": True,
+                "message": "Valid admin access code"
+            }
+        else:
+            return {
+                "success": True,
+                "valid": False,
+                "message": "Invalid admin access code"
+            }
+            
+    except Exception as e:
+        print(f"❌ Admin code check error: {e}")
+        return {
+            "success": False,
+            "valid": False,
+            "error": str(e)
+        }
+
+@router.post("/initialize-player")
+async def initialize_player_data(
+    request_data: dict,
+    current_user = Depends(get_current_user)
+):
+    """Initialize player data for a user (stats, skills, inventory)"""
+    try:
+        from app.core.supabase_client import get_supabase_auth_client
+        import uuid
+        from datetime import datetime
+        
+        service_client = get_supabase_auth_client()
+        user_id = request_data.get('user_id', current_user['id'])
+        
+        # Check if player stats already exist
+        existing_stats = service_client.table('player_stats').select('*').eq('user_id', user_id).execute()
+        
+        if existing_stats.data:
+            return {
+                "success": True,
+                "message": "Player data already exists",
+                "data": existing_stats.data[0]
+            }
+        
+        # Create initial player stats
+        initial_stats = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "total_xp": 0,
+            "current_xp": 0,
+            "current_level": 1,
+            "current_rank": 0,
+            "gameboard_xp": 0,
+            "gameboard_position": 1,
+            "gameboard_moves": 3,  # Starting moves
+            "gold": 0,
+            "unit_xp": {},
+            "quest_progress": {
+                "quest1": 0,
+                "quest2": 0,
+                "quest3": 0,
+                "currentQuest": 1
+            },
+            "assignment_awards": [],
+            "medals": [],
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        result = service_client.table('player_stats').insert(initial_stats).execute()
+        
+        return {
+            "success": True,
+            "message": "Player data initialized successfully",
+            "data": result.data[0]
+        }
+        
+    except Exception as e:
+        print(f"❌ Initialize player error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )

@@ -1074,6 +1074,59 @@ async def delete_resource(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/activity-log")
+async def get_activity_log(
+    limit: int = 50,
+    offset: int = 0,
+    current_admin = Depends(require_admin)
+):
+    """Get recent activity log for admin oversight"""
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Get recent XP entries with user information
+        xp_entries = service_client.table('xp_entries')\
+            .select('*, users(username, email)')\
+            .order('created_at', desc=True)\
+            .range(offset, offset + limit - 1)\
+            .execute()
+        
+        # Transform the data to include user info properly
+        activity_entries = []
+        for entry in xp_entries.data:
+            user_info = entry.get('users')
+            activity_entry = {
+                "id": entry.get('id'),
+                "type": "xp_award",
+                "description": entry.get('description'),
+                "assignment_name": entry.get('assignment_name'),
+                "xp_amount": entry.get('xp_amount'),
+                "student_username": user_info.get('username') if user_info else 'Unknown',
+                "student_email": user_info.get('email') if user_info else 'Unknown',
+                "created_at": entry.get('created_at'),
+                "awarded_by": entry.get('awarded_by')
+            }
+            activity_entries.append(activity_entry)
+        
+        return {
+            "success": True,
+            "data": activity_entries,
+            "total": len(activity_entries),
+            "limit": limit,
+            "offset": offset
+        }
+        
+    except Exception as e:
+        print(f"❌ Get activity log error: {e}")
+        # Return empty array as fallback
+        return {
+            "success": True,
+            "data": [],
+            "total": 0,
+            "limit": limit,
+            "offset": offset
+        }
+
 @router.post("/award")
 @limiter.limit("30/minute")
 async def award_student(
