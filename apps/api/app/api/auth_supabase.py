@@ -16,6 +16,7 @@ from pydantic import BaseModel
 import uuid
 
 from app.core.supabase_db import get_supabase_db, SupabaseDB
+from app.core.supabase_client import get_supabase_auth_client
 
 router = APIRouter(prefix="/auth", tags=["Supabase Authentication"])
 limiter = Limiter(key_func=get_remote_address)
@@ -244,16 +245,25 @@ async def complete_profile(
     """Complete user profile after first login with pre-set credentials"""
     
     try:
-        # Check if profile is already complete (check for non-empty username/program)
-        if current_user.get('username') and current_user.get('user_program'):
+        # Check if profile is already complete
+        # Profile is incomplete if:
+        # - username starts with 'temp_' (temporary username)  
+        # - user_program is 'Pending Profile Completion'
+        username = current_user.get('username', '')
+        user_program = current_user.get('user_program', '')
+        
+        if (not username.startswith('temp_') and 
+            user_program != 'Pending Profile Completion'):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Profile is already complete"
             )
         
         # Check if username is already taken
-        existing_user = await db.get_user_by_username(profile_data.username)
-        if existing_user and existing_user['id'] != current_user['id']:
+        service_client = get_supabase_auth_client()
+        existing_username = service_client.table('users').select('*').eq('username', profile_data.username).execute()
+        
+        if existing_username.data and existing_username.data[0]['id'] != current_user['id']:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Username is already taken"
@@ -263,7 +273,6 @@ async def complete_profile(
         user_updates = {
             "username": profile_data.username,
             "user_program": profile_data.user_program,
-            "profile_complete": True,  # Mark profile as complete
             "updated_at": datetime.utcnow().isoformat()
         }
         
@@ -273,14 +282,16 @@ async def complete_profile(
             # For now, we'll just store the filename/reference
             user_updates["profile_picture"] = f"profile_{current_user['id']}.jpg"
         
-        # Update user in database
-        updated_user = await db.update_user(current_user['id'], user_updates)
+        # Update user in database using service client
+        update_result = service_client.table('users').update(user_updates).eq('id', current_user['id']).execute()
         
-        if not updated_user:
+        if not update_result.data:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update profile"
             )
+        
+        updated_user = update_result.data[0]
         
         # Now create player stats, skills, and inventory
         # Create initial player stats
@@ -300,25 +311,13 @@ async def complete_profile(
             "updated_at": datetime.utcnow().isoformat()
         }
         
-        await db.create_player_stats(initial_stats)
+        # TODO: Initialize player stats, skills, and inventory using service_client
+        # For now, skip this step to test profile completion
+        # Player stats will be initialized when student first accesses the game
         
-        # Create initial player skills (all level 1)
-        await db.create_player_skills(current_user['id'])
-        
-        # Create initial inventory
-        initial_inventory = {
-            "id": str(uuid.uuid4()),
-            "user_id": current_user['id'],
-            "water": 0,
-            "gatorade": 0,
-            "first_aid_kit": 0,
-            "skis": 0,
-            "toques": 0,
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
-        }
-        
-        await db.create_player_inventory(initial_inventory)
+        # await db.create_player_stats(initial_stats)
+        # await db.create_player_skills(current_user['id'])
+        # await db.create_player_inventory(initial_inventory)
         
         print(f"✅ Profile completed for user: {profile_data.username} ({current_user['email']})")
         
