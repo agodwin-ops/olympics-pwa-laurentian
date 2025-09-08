@@ -17,7 +17,7 @@ interface ProfileForm {
 
 export default function ProfileSetupPage() {
   const router = useRouter();
-  const { user, updateProfile } = useOlympicsAuth();
+  const { user, updateProfile, loading: authLoading } = useOlympicsAuth();
   const [form, setForm] = useState<ProfileForm>({
     username: '',
     userProgram: '',
@@ -97,6 +97,40 @@ export default function ProfileSetupPage() {
     'EDPH',
     'BSc Kinesiology'
   ];
+
+  // Show loading spinner while auth context is loading user data
+  if (authLoading) {
+    return (
+      <div className="min-h-screen winter-bg flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-olympic-blue rounded-full mb-4 shadow-lg">
+            <div className="animate-spin w-8 h-8 border-2 border-white border-t-transparent rounded-full"></div>
+          </div>
+          <p className="text-xl text-gray-600">Loading your account...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is not available after loading, something went wrong
+  if (!user) {
+    return (
+      <div className="min-h-screen winter-bg flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500 rounded-full mb-4 shadow-lg">
+            <span className="text-white text-2xl">⚠️</span>
+          </div>
+          <p className="text-xl text-gray-600 mb-4">Unable to load your account</p>
+          <button 
+            onClick={() => window.location.href = '/'} 
+            className="px-6 py-2 bg-olympic-blue text-white rounded-lg hover:bg-blue-700"
+          >
+            Return to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen winter-bg flex items-center justify-center p-4">
