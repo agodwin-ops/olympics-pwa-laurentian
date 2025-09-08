@@ -71,15 +71,9 @@ export default function HomePage() {
               </p>
               <Link
                 href="/student-login"
-                className="inline-block w-full olympic-button py-4 text-lg font-oswald font-semibold mb-4"
+                className="inline-block w-full olympic-button py-4 text-lg font-oswald font-semibold"
               >
                 Student Login
-              </Link>
-              <Link
-                href="/onboarding"
-                className="inline-block text-olympic-blue hover:text-olympic-blue-dark font-medium"
-              >
-                New Student? Register Here
               </Link>
             </div>
 
