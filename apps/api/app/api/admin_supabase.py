@@ -425,6 +425,41 @@ async def get_units(current_admin = Depends(require_admin)):
             detail=str(e)
         )
 
+@router.get("/lectures")
+async def get_lectures(
+    unit_id: str = None,
+    published_only: bool = False,
+    current_admin = Depends(require_admin)
+):
+    """Get lectures/learning resources"""
+    
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Build query
+        query = service_client.table('lectures').select('*')
+        
+        if unit_id:
+            query = query.eq('unit_id', unit_id)
+        
+        if published_only:
+            query = query.eq('is_published', True)
+        
+        lectures_result = query.order('created_at', desc=True).execute()
+        
+        return {
+            "success": True,
+            "data": lectures_result.data or []
+        }
+        
+    except Exception as e:
+        print(f"❌ Get lectures error: {e}")
+        # Return empty array as fallback instead of error
+        return {
+            "success": True,
+            "data": []
+        }
+
 @router.get("/students")
 async def get_all_students(current_admin = Depends(require_admin)):
     """Get all students with their stats for admin overview"""

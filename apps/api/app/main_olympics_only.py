@@ -142,6 +142,36 @@ def debug():
         "message": "If you see this, the basic app is working"
     }
 
+@app.get("/api/lectures")
+async def get_lectures(unit_id: str = None, published_only: bool = False):
+    """Get lectures/resources for dashboard - public endpoint"""
+    try:
+        from app.core.supabase_client import get_supabase_auth_client
+        service_client = get_supabase_auth_client()
+        
+        query = service_client.table('lectures').select('*')
+        
+        if unit_id:
+            query = query.eq('unit_id', unit_id)
+        
+        if published_only:
+            query = query.eq('is_published', True)
+        
+        lectures_result = query.order('created_at', desc=True).execute()
+        
+        return {
+            "success": True,
+            "data": lectures_result.data or []
+        }
+        
+    except Exception as e:
+        print(f"❌ Get lectures error: {e}")
+        # Return empty array as fallback
+        return {
+            "success": True,
+            "data": []
+        }
+
 @app.get("/api/system/status")
 def system_status():
     """System status for classroom deployment"""

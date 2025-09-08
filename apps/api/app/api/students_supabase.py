@@ -296,3 +296,15 @@ async def change_password(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+@router.get("/me/health")
+async def get_my_health(current_student = Depends(require_student)):
+    """Simple health check for student authentication"""
+    
+    return {
+        "success": True,
+        "message": "Student API is working",
+        "user_id": current_student['id'],
+        "username": current_student['username'],
+        "email": current_student['email']
+    }
