@@ -16,7 +16,13 @@
       "Bash(hypercorn:*)",
       "Bash(uvicorn:*)",
       "Bash(npx tsc:*)",
-      "Bash(/dev/null)"
+      "Bash(/dev/null)",
+      "Bash(pkill:*)",
+      "Bash(cat:*)",
+      "Bash(chmod:*)",
+      "Bash(./get-ip.sh:*)",
+      "Bash(npm install:*)",
+      "Bash(NODE_ENV=production node -e \"console.log(''API Base URL:'', process.env.NEXT_PUBLIC_API_BASE_URL || ''NOT SET'')\")"
     ],
     "deny": [],
     "ask": []

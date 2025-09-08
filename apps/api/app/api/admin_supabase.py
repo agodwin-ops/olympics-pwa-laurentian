@@ -562,7 +562,7 @@ async def batch_register_students(
                 # Hash password
                 hashed_password = pwd_context.hash(batch_data.default_password)
                 
-                # Create student user with profile completion flag
+                # Create student user - compatible with existing schema
                 new_user = {
                     "id": user_id,
                     "email": student_data['email'],
@@ -570,7 +570,6 @@ async def batch_register_students(
                     "password_hash": hashed_password,
                     "user_program": student_data.get('user_program', 'Pending Profile Completion'),
                     "is_admin": False,
-                    "profile_complete": not username.startswith('temp_'),
                     "created_at": datetime.utcnow().isoformat(),
                     "updated_at": datetime.utcnow().isoformat()
                 }
