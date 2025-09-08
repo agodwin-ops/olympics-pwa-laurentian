@@ -92,10 +92,10 @@ curl -X POST https://your-app.onrender.com/api/auth/login \
   -F "email=test@student.com" \
   -F "password=TestPass123!"
 
-# Test admin login
+# Test admin login (use actual Primary Instructor credentials)
 curl -X POST https://your-app.onrender.com/api/auth/login \
-  -F "email=admin@olympics.com" \
-  -F "password=AdminPass123!"
+  -F "username=agodwin@laurentian.ca" \
+  -F "password=HotPotato45%"
 
 # Test student data
 curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \

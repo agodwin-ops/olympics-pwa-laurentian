@@ -39,13 +39,13 @@ class BulkAwardRequest(BaseModel):
 class BatchStudentRegistrationRequest(BaseModel):
     students: List[Dict[str, str]]  # [{"email": "user@laurentian.ca"}, ...] - minimal format
     password_mode: str = "unique"  # "shared" or "unique" 
-    default_password: str = "Olympics2024!"  # Only used if password_mode is "shared"
+    default_password: str = "ChangeMe123!"  # Only used if password_mode is "shared" (not recommended)
 
 class AddSingleStudentRequest(BaseModel):
     email: str
     username: str
     user_program: str
-    temporary_password: str = "GamePass123!"
+    temporary_password: str = "ChangeMe123!"
 
 class ResetPasswordRequest(BaseModel):
     student_email: str

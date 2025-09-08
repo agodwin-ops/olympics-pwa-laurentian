@@ -10,6 +10,9 @@ interface ProfileForm {
   username: string;
   userProgram: string;
   profilePicture: File | null;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 export default function ProfileSetupPage() {
@@ -18,7 +21,10 @@ export default function ProfileSetupPage() {
   const [form, setForm] = useState<ProfileForm>({
     username: '',
     userProgram: '',
-    profilePicture: null
+    profilePicture: null,
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
   const [profilePreview, setProfilePreview] = useState<string | null>(null);
