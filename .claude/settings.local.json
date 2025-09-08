@@ -24,7 +24,8 @@
       "Bash(npm install:*)",
       "Bash(NODE_ENV=production node -e \"console.log(''API Base URL:'', process.env.NEXT_PUBLIC_API_BASE_URL || ''NOT SET'')\")",
       "Bash(node test_all_production_endpoints.js)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(lsof:*)"
     ],
     "deny": [],
     "ask": []

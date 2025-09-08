@@ -46,14 +46,27 @@ function transformApiUserToFrontendUser(apiUser: any): User {
 
 export function OlympicsAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Start with loading: false for SSR, will be updated on client
+  const [loading, setLoading] = useState(typeof window === 'undefined' ? false : true);
 
-  // Check for existing session on mount
+  // Check for existing session on mount - CLIENT SIDE ONLY
   useEffect(() => {
-    checkAuthStatus();
+    // Only run on client-side to avoid SSR issues
+    if (typeof window !== 'undefined') {
+      // Set loading to true on client-side mount, then check auth
+      setLoading(true);
+      checkAuthStatus();
+    }
   }, []);
 
   const checkAuthStatus = async () => {
+    // Ensure we're on the client-side
+    if (typeof window === 'undefined') {
+      console.log('⚠️ PWA Session Recovery: Skipping on server-side');
+      setLoading(false);
+      return;
+    }
+    
     try {
       console.log('🔍 PWA Session Recovery: Checking for existing authentication...');
       
@@ -132,7 +145,9 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
       apiClient.setToken(null);
       setUser(null);
     } finally {
+      console.log('🔧 PWA Session Recovery: Setting loading to false');
       setLoading(false);
+      console.log('✅ PWA Session Recovery: Complete');
     }
   };
 
