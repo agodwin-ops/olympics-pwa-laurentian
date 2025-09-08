@@ -26,11 +26,14 @@ export default function StudentLoginPage() {
       // Use email for login (batch authentication system)
       const result = await login(form.email, form.password);
       if (result === true) {
-        // Complete profile - go to dashboard
+        // Admin user - go to dashboard  
         router.push('/dashboard');
       } else if (result === 'incomplete-profile') {
-        // Batch student needs to complete profile - redirect to profile setup
+        // New/batch student needs to complete profile - redirect to profile setup
         router.push('/profile-setup');
+      } else if (result === 'returning-student') {
+        // Returning student with complete profile - go directly to dashboard
+        router.push('/dashboard');
       } else {
         setError('Login failed. Please check your credentials or contact your instructor.');
       }

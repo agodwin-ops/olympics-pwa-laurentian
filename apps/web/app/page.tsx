@@ -26,6 +26,9 @@ export default function HomePage() {
       } else if (result === 'incomplete-profile') {
         // Admins should not have incomplete profiles - this is an error
         setAdminError('Admin account configuration error. Contact system administrator.');
+      } else if (result === 'returning-student') {
+        // This should not happen for admin accounts - redirect to dashboard anyway
+        router.push('/dashboard');
       } else {
         setAdminError('Invalid admin credentials');
       }

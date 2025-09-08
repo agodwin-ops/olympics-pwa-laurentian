@@ -121,14 +121,33 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
         localStorage.setItem('olympics_user', JSON.stringify(userData));
         
         // Check if profile needs completion (students with temporary usernames or incomplete profiles)
-        if ((!userData.isAdmin) && 
-            (userData.profileComplete === false || 
-             userData.username.startsWith('temp_') || 
-             userData.userProgram === 'Pending Profile Completion')) {
-          // Batch students need to complete profile - redirect to profile setup
-          return 'incomplete-profile';
+        if (!userData.isAdmin) {
+          const hasIncompleteProfile = (
+            userData.profileComplete === false || 
+            userData.username.startsWith('temp_') || 
+            userData.userProgram === 'Pending Profile Completion'
+          );
+          
+          if (hasIncompleteProfile) {
+            console.log('New student detected - redirecting to profile setup:', {
+              username: userData.username,
+              userProgram: userData.userProgram,
+              profileComplete: userData.profileComplete
+            });
+            // New/batch students need to complete profile - redirect to profile setup
+            return 'incomplete-profile';
+          } else {
+            console.log('Returning student detected - profile already complete:', {
+              username: userData.username,
+              userProgram: userData.userProgram,
+              profileComplete: userData.profileComplete
+            });
+            // Returning student with complete profile - go directly to dashboard
+            return 'returning-student';
+          }
         }
         
+        // Admin users go directly to dashboard
         return true;
       } else {
         throw new Error(response.error || 'Login failed');
