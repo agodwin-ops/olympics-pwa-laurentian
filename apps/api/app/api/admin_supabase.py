@@ -37,7 +37,7 @@ class BulkAwardRequest(BaseModel):
     target_user_ids: List[str] = []  # If empty, award to all students
 
 class BatchStudentRegistrationRequest(BaseModel):
-    students: List[Dict[str, str]]  # [{"email": "user@laurentian.ca", "username": "user_name", "user_program": "Program Name"}]
+    students: List[Dict[str, str]]  # [{"email": "user@laurentian.ca"}, ...] - minimal format
     default_password: str = "Olympics2024!"
 
 class AddSingleStudentRequest(BaseModel):
@@ -525,31 +525,27 @@ async def batch_register_students(
         
         for student_data in batch_data.students:
             try:
-                # Validate required fields (email and user_program are required, username can be generated)
-                if not all(k in student_data for k in ['email', 'user_program']):
+                # Validate required fields (only email is required)
+                if 'email' not in student_data or not student_data['email'].strip():
                     failed_registrations.append({
                         "email": student_data.get('email', 'Unknown'),
-                        "error": "Missing required fields (email, user_program)"
+                        "error": "Missing required field: email"
                     })
                     continue
                 
-                # Generate username if missing or empty
+                # Generate temporary UUID-based username (guaranteed unique)
+                user_id = str(uuid.uuid4())
                 username = student_data.get('username', '').strip()
                 if not username:
-                    # Generate username from email: user@laurentian.ca -> user_laurentian
-                    email_local = student_data['email'].split('@')[0]
-                    email_domain = student_data['email'].split('@')[1].split('.')[0] if '@' in student_data['email'] else 'user'
-                    base_username = f"{email_local}_{email_domain}"
-                    
-                    # Check if username exists and make it unique (both in database and current batch)
-                    username = base_username
-                    counter = 1
-                    while True:
-                        existing_username = service_client.table('users').select('*').eq('username', username).execute()
-                        if not existing_username.data and username not in used_usernames:
-                            break
-                        username = f"{base_username}_{counter}"
-                        counter += 1
+                    # Use first 8 chars of user ID as temporary username
+                    username = f"temp_{user_id[:8]}"
+                
+                # Check if custom username already exists (if provided)
+                if username != f"temp_{user_id[:8]}":
+                    existing_username = service_client.table('users').select('*').eq('username', username).execute()
+                    if existing_username.data or username in used_usernames:
+                        # Fall back to temporary username if custom one conflicts
+                        username = f"temp_{user_id[:8]}"
                 
                 # Add username to used set
                 used_usernames.add(username)
@@ -566,14 +562,15 @@ async def batch_register_students(
                 # Hash password
                 hashed_password = pwd_context.hash(batch_data.default_password)
                 
-                # Create student user
+                # Create student user with profile completion flag
                 new_user = {
-                    "id": str(uuid.uuid4()),
+                    "id": user_id,
                     "email": student_data['email'],
                     "username": username,
                     "password_hash": hashed_password,
-                    "user_program": student_data['user_program'],
+                    "user_program": student_data.get('user_program', 'Pending Profile Completion'),
                     "is_admin": False,
+                    "profile_complete": not username.startswith('temp_'),
                     "created_at": datetime.utcnow().isoformat(),
                     "updated_at": datetime.utcnow().isoformat()
                 }
