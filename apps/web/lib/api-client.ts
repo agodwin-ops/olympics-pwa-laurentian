@@ -365,7 +365,7 @@ class ApiClient {
     order_index?: number;
     is_published?: boolean;
   }): Promise<ApiResponse<any>> {
-    return this.request('/api/lectures', {
+    return this.request('/api/admin/lectures', {
       method: 'POST',
       body: JSON.stringify(lectureData),
     });
@@ -378,14 +378,14 @@ class ApiClient {
     order_index?: number;
     is_published?: boolean;
   }): Promise<ApiResponse<any>> {
-    return this.request(`/api/lectures/${lectureId}`, {
+    return this.request(`/api/admin/lectures/${lectureId}`, {
       method: 'PUT',
       body: JSON.stringify(updates),
     });
   }
 
   async deleteLecture(lectureId: string): Promise<ApiResponse<any>> {
-    return this.request(`/api/lectures/${lectureId}`, {
+    return this.request(`/api/admin/lectures/${lectureId}`, {
       method: 'DELETE',
     });
   }
@@ -401,7 +401,7 @@ class ApiClient {
     formData.append('description', description || '');
     formData.append('is_public', isPublic.toString());
 
-    const response = await fetch(`${this.baseURL}/api/lectures/${lectureId}/upload`, {
+    const response = await fetch(`${this.baseURL}/api/admin/lectures/${lectureId}/upload`, {
       method: 'POST',
       headers: this.token ? { 'Authorization': `Bearer ${this.token}` } : {},
       body: formData,
@@ -417,7 +417,7 @@ class ApiClient {
   }
 
   async deleteResource(resourceId: string): Promise<ApiResponse<any>> {
-    return this.request(`/api/resources/${resourceId}`, {
+    return this.request(`/api/admin/resources/${resourceId}`, {
       method: 'DELETE',
     });
   }

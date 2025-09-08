@@ -3,7 +3,7 @@ Olympics PWA Admin API - Supabase Compatible
 Provides admin functionality for assignment creation and XP awarding using Supabase
 """
 
-from fastapi import APIRouter, HTTPException, status, Depends, Request
+from fastapi import APIRouter, HTTPException, status, Depends, Request, File, Form, UploadFile
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from typing import List, Optional, Dict, Any
@@ -460,6 +460,48 @@ async def get_lectures(
             "data": []
         }
 
+@router.post("/lectures")
+async def create_lecture(
+    lecture_data: dict,
+    current_admin = Depends(require_admin)
+):
+    """Create a new lecture with Supabase"""
+    
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Prepare lecture data
+        new_lecture = {
+            "id": str(uuid.uuid4()),
+            "title": lecture_data.get("title"),
+            "description": lecture_data.get("description", ""),
+            "unit_id": lecture_data.get("unit_id"),
+            "order_index": lecture_data.get("order_index", 0),
+            "is_published": lecture_data.get("is_published", True),
+            "created_by": current_admin["id"],
+            "created_at": datetime.utcnow().isoformat(),
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        # Insert lecture into Supabase
+        result = service_client.table('lectures').insert(new_lecture).execute()
+        
+        if result.data:
+            print(f"✅ Created lecture: {lecture_data.get('title')} by {current_admin['username']}")
+            return {
+                "success": True,
+                "data": result.data[0]
+            }
+        else:
+            raise Exception("Failed to create lecture")
+        
+    except Exception as e:
+        print(f"❌ Create lecture error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
+
 @router.get("/students")
 async def get_all_students(current_admin = Depends(require_admin)):
     """Get all students with their stats for admin overview"""
@@ -904,3 +946,130 @@ async def add_incomplete_student(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+# Lecture and Resource Management Endpoints
+
+@router.put("/lectures/{lecture_id}")
+async def update_lecture(
+    lecture_id: str,
+    lecture_update: dict,
+    current_admin = Depends(require_admin)
+):
+    """Update a lecture"""
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Check if lecture exists
+        existing = service_client.table('lectures').select('*').eq('id', lecture_id).execute()
+        if not existing.data:
+            raise HTTPException(status_code=404, detail="Lecture not found")
+        
+        # Update lecture
+        update_data = {
+            **lecture_update,
+            "updated_at": datetime.utcnow().isoformat()
+        }
+        
+        result = service_client.table('lectures').update(update_data).eq('id', lecture_id).execute()
+        return {"success": True, "data": result.data[0]}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/lectures/{lecture_id}")
+async def delete_lecture(
+    lecture_id: str,
+    current_admin = Depends(require_admin)
+):
+    """Delete a lecture and all its resources"""
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Delete associated resources first
+        service_client.table('lecture_resources').delete().eq('lecture_id', lecture_id).execute()
+        
+        # Delete lecture
+        result = service_client.table('lectures').delete().eq('id', lecture_id).execute()
+        
+        return {"success": True, "message": "Lecture deleted successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/lectures/{lecture_id}/upload")
+async def upload_file_to_lecture(
+    lecture_id: str,
+    file: UploadFile = File(...),
+    description: Optional[str] = Form(None),
+    is_public: bool = Form(True),
+    current_admin = Depends(require_admin)
+):
+    """Upload a file to a lecture (simplified - stores file info only)"""
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Verify lecture exists
+        lecture = service_client.table('lectures').select('*').eq('id', lecture_id).execute()
+        if not lecture.data:
+            raise HTTPException(status_code=404, detail="Lecture not found")
+        
+        # Basic file validation
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No filename provided")
+        
+        # Read file content for size check
+        file_content = await file.read()
+        if len(file_content) > 50 * 1024 * 1024:  # 50MB limit
+            raise HTTPException(status_code=400, detail="File size exceeds 50MB limit")
+        
+        # Create resource record (simplified - file path is just the original filename)
+        resource_data = {
+            "id": str(uuid.uuid4()),
+            "lecture_id": lecture_id,
+            "filename": file.filename.replace(' ', '_'),  # Sanitize filename
+            "original_filename": file.filename,
+            "file_type": file.content_type or "application/octet-stream",
+            "file_size": len(file_content),
+            "file_path": f"/uploads/lectures/{lecture_id}/{file.filename}",  # Mock path
+            "description": description,
+            "is_public": is_public,
+            "uploaded_by": current_admin["id"],
+            "created_at": datetime.utcnow().isoformat()
+        }
+        
+        result = service_client.table('lecture_resources').insert(resource_data).execute()
+        
+        return {
+            "success": True,
+            "resource": result.data[0],
+            "message": "File uploaded successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+@router.delete("/resources/{resource_id}")
+async def delete_resource(
+    resource_id: str,
+    current_admin = Depends(require_admin)
+):
+    """Delete a file resource"""
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Check if resource exists
+        existing = service_client.table('lecture_resources').select('*').eq('id', resource_id).execute()
+        if not existing.data:
+            raise HTTPException(status_code=404, detail="Resource not found")
+        
+        # Delete resource record
+        service_client.table('lecture_resources').delete().eq('id', resource_id).execute()
+        
+        return {"success": True, "message": "Resource deleted successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
