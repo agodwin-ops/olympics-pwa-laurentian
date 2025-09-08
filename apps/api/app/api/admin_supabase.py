@@ -38,7 +38,8 @@ class BulkAwardRequest(BaseModel):
 
 class BatchStudentRegistrationRequest(BaseModel):
     students: List[Dict[str, str]]  # [{"email": "user@laurentian.ca"}, ...] - minimal format
-    default_password: str = "Olympics2024!"
+    password_mode: str = "unique"  # "shared" or "unique" 
+    default_password: str = "Olympics2024!"  # Only used if password_mode is "shared"
 
 class AddSingleStudentRequest(BaseModel):
     email: str
@@ -559,8 +560,20 @@ async def batch_register_students(
                     })
                     continue
                 
+                # Generate individual password for each student or use shared
+                if batch_data.password_mode == "unique":
+                    # Generate secure unique password: OlyPass_AB12cd
+                    import random
+                    import string
+                    chars = string.ascii_letters + string.digits
+                    unique_suffix = ''.join(random.choices(chars, k=6))
+                    student_password = f"OlyPass_{unique_suffix}"
+                else:
+                    # Use shared password
+                    student_password = batch_data.default_password
+                
                 # Hash password
-                hashed_password = pwd_context.hash(batch_data.default_password)
+                hashed_password = pwd_context.hash(student_password)
                 
                 # Create student user - compatible with existing schema
                 new_user = {
@@ -600,7 +613,7 @@ async def batch_register_students(
                     "email": student_data['email'],
                     "username": username,
                     "user_id": user_id,
-                    "temporary_password": batch_data.default_password
+                    "temporary_password": student_password
                 })
                 
             except Exception as student_error:
@@ -611,13 +624,28 @@ async def batch_register_students(
         
         print(f"✅ Batch registration: {len(successful_registrations)} successful, {len(failed_registrations)} failed")
         
+        # Generate credentials summary for admin
+        credentials_summary = {
+            "import_timestamp": datetime.utcnow().isoformat(),
+            "password_mode": batch_data.password_mode,
+            "total_imported": len(successful_registrations),
+            "credentials": [
+                {
+                    "email": reg["email"], 
+                    "username": reg["username"], 
+                    "password": reg["temporary_password"]
+                } for reg in successful_registrations
+            ]
+        }
+
         return {
             "success": True,
             "message": f"Registered {len(successful_registrations)} students successfully, {len(failed_registrations)} failed",
             "data": {
                 "successful": successful_registrations,
                 "failed": failed_registrations,
-                "total_processed": len(batch_data.students)
+                "total_processed": len(batch_data.students),
+                "credentials_report": credentials_summary
             }
         }
         
