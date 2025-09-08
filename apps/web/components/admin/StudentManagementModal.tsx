@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, User, Key, AlertCircle, CheckCircle } from 'lucide-react';
+import apiClient from '@/lib/api-client';
 
 interface StudentManagementModalProps {
   isOpen: boolean;
@@ -42,21 +43,13 @@ export default function StudentManagementModal({
         return;
       }
       
-      // Call the incomplete student creation API
-      const response = await fetch('/api/admin/add-incomplete-student', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: singleStudent.email,
-          temporary_password: singleStudent.temporary_password
-        })
+      // Call the incomplete student creation API using apiClient
+      const result = await apiClient.addIncompleteStudent({
+        email: singleStudent.email,
+        temporary_password: singleStudent.temporary_password
       });
       
-      const result = await response.json();
-      
-      if (response.ok && result.success) {
+      if (result.success) {
         setSingleResult(`✅ Account created for ${singleStudent.email}. Student will complete their profile on first login.`);
         onStudentsAdded();
         // Clear form after success
@@ -65,7 +58,7 @@ export default function StudentManagementModal({
           temporary_password: 'ChangeMe123!'
         });
       } else {
-        setSingleResult(`❌ Failed to create account: ${result.error || result.message || 'Unknown error'}`);
+        setSingleResult(`❌ Failed to create account: ${result.error || 'Unknown error'}`);
       }
     } catch (error: any) {
       console.error('Single student creation error:', error);
@@ -86,26 +79,16 @@ export default function StudentManagementModal({
         return;
       }
       
-      const response = await fetch('/api/admin/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          student_email: resetEmail,
-          new_temporary_password: resetPassword
-        })
-      });
+      // Call the password reset API using apiClient
+      const result = await apiClient.resetStudentPassword(resetEmail, resetPassword);
       
-      const result = await response.json();
-      
-      if (response.ok && result.success) {
+      if (result.success) {
         setResetResult(`✅ Password reset for ${resetEmail}. New password: ${resetPassword}`);
         // Clear form after success
         setResetEmail('');
         setResetPassword('NewPass123!');
       } else {
-        setResetResult(`❌ Failed to reset password: ${result.error || result.message || 'Unknown error'}`);
+        setResetResult(`❌ Failed to reset password: ${result.error || 'Unknown error'}`);
       }
     } catch (error: any) {
       console.error('Password reset error:', error);
