@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { User, AuthContextType, RegisterForm } from '@/types/olympics';
 import apiClient from '@/lib/api-client';
 import type { ApiResponse } from '@/lib/api-client';
+import XPBackupService from '@/lib/xp-backup-service';
 
 const OlympicsAuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -232,8 +233,20 @@ export function OlympicsAuthProvider({ children }: { children: React.ReactNode }
   const logout = () => {
     console.log('Logging out user');
     setUser(null);
+    
+    // Clear authentication data
     localStorage.removeItem('olympics_user');
     localStorage.removeItem('olympics_auth_token');
+    
+    // Clear admin-specific data to prevent cross-session contamination
+    localStorage.removeItem('admin_created_lectures');
+    localStorage.removeItem('admin_activity_logs');
+    localStorage.removeItem('admin_students_data');
+    
+    // Stop XP backup service to prevent background processes
+    const xpService = XPBackupService.getInstance();
+    xpService.stopNightlyBackups();
+    
     apiClient.logout();
     window.location.href = '/';
   };

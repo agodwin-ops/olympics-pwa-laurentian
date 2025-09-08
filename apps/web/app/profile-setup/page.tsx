@@ -48,38 +48,28 @@ export default function ProfileSetupPage() {
     setLoading(true);
     
     try {
-      // Use API client for consistent authentication
-      let profilePictureUrl: string | undefined = undefined;
-      if (form.profilePicture) {
-        profilePictureUrl = await fileToBase64(form.profilePicture);
-      }
-
-      const result = await apiClient.completeProfile({
-        username: form.username,
-        user_program: form.userProgram,
-        profile_picture_url: profilePictureUrl
-      });
-
-      if (result.success) {
-        // Update local user context if updateProfile exists
-        if (updateProfile) {
-          // Convert File to data URL if present
-          let profilePictureUrl: string | undefined = undefined;
-          if (form.profilePicture) {
-            profilePictureUrl = URL.createObjectURL(form.profilePicture);
-          }
-          
-          await updateProfile({
-            username: form.username,
-            userProgram: form.userProgram,
-            profilePicture: profilePictureUrl
-          });
+      // Use context's updateProfile method which handles API call and state updates
+      if (updateProfile) {
+        // Convert File to data URL if present
+        let profilePictureUrl: string | undefined = undefined;
+        if (form.profilePicture) {
+          profilePictureUrl = await fileToBase64(form.profilePicture);
         }
         
-        // Redirect to dashboard
-        router.push('/dashboard');
+        const success = await updateProfile({
+          username: form.username,
+          userProgram: form.userProgram,
+          profilePicture: profilePictureUrl
+        });
+        
+        if (success) {
+          // Redirect to dashboard
+          router.push('/dashboard');
+        } else {
+          throw new Error('Profile update failed');
+        }
       } else {
-        throw new Error(result.error || 'Profile update failed');
+        throw new Error('Profile update service not available');
       }
     } catch (error: any) {
       console.error('Profile setup error:', error);

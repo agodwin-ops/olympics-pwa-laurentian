@@ -1576,7 +1576,8 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
         onClose={() => setShowStudentManagementModal(false)}
         onStudentsAdded={() => {
           // Reload students after adding new ones
-          setStudents([]);
+          console.log('Students added, refreshing admin data');
+          loadAdminData();
         }}
       />
 
@@ -1587,6 +1588,9 @@ export default function AdminPanel({ currentUser }: AdminPanelProps) {
           onUploadComplete={(results) => {
             setShowBatchUpload(false);
             setBatchUploadResults(results);
+            // Reload students after batch upload
+            console.log('Batch upload completed, refreshing admin data');
+            loadAdminData();
           }}
         />
       )}

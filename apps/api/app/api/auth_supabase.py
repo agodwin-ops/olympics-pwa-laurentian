@@ -263,6 +263,7 @@ async def complete_profile(
         user_updates = {
             "username": profile_data.username,
             "user_program": profile_data.user_program,
+            "profile_complete": True,  # Mark profile as complete
             "updated_at": datetime.utcnow().isoformat()
         }
         
@@ -324,10 +325,7 @@ async def complete_profile(
         return {
             "success": True,
             "message": "Profile completed successfully",
-            "data": {
-                "username": profile_data.username,
-                "user_program": profile_data.user_program
-            }
+            "data": updated_user  # Return the full updated user object
         }
         
     except HTTPException:
