@@ -20,7 +20,7 @@ export default function StudentManagementModal({
   // Single student state (incomplete profile flow)
   const [singleStudent, setSingleStudent] = useState({
     email: '',
-    temporary_password: 'GamePass123!'
+    temporary_password: 'ChangeMe123!'
   });
   const [singleResult, setSingleResult] = useState<string>('');
   
@@ -62,7 +62,7 @@ export default function StudentManagementModal({
         // Clear form after success
         setSingleStudent({
           email: '',
-          temporary_password: 'GamePass123!'
+          temporary_password: 'ChangeMe123!'
         });
       } else {
         setSingleResult(`❌ Failed to create account: ${result.error || result.message || 'Unknown error'}`);

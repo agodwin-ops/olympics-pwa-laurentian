@@ -820,14 +820,16 @@ async def add_incomplete_student(
         # Hash password
         hashed_password = pwd_context.hash(student_data.temporary_password)
         
-        # Create incomplete student user (no username/program yet)
-        # Use the exact column names from the Supabase users table
+        # Create incomplete student user with temporary UUID-based username
+        user_id = str(uuid.uuid4())
+        temp_username = f"temp_{user_id[:8]}"  # Use same logic as batch import
+        
         new_user = {
-            "id": str(uuid.uuid4()),
+            "id": user_id,
             "email": student_data.email,
-            "username": "",  # Will be set during profile completion
-            "password_hash": hashed_password,  # Correct column name from schema
-            "user_program": "",  # Will be set during profile completion
+            "username": temp_username,  # Temporary username - triggers profile completion
+            "password_hash": hashed_password,
+            "user_program": "Pending Profile Completion",  # Clear indication
             "is_admin": False,
             "created_at": datetime.utcnow().isoformat(),
             "updated_at": datetime.utcnow().isoformat()
@@ -849,9 +851,10 @@ async def add_incomplete_student(
         
         return {
             "success": True,
-            "message": f"Student account created for {student_data.email}. They will complete their profile on first login.",
+            "message": f"Student account created for {student_data.email} with temporary username {temp_username}. They will complete their profile on first login.",
             "data": {
                 "user_id": user_id,
+                "temporary_username": temp_username,
                 "email": student_data.email,
                 "temporary_password": student_data.temporary_password,
                 "profile_complete": False
