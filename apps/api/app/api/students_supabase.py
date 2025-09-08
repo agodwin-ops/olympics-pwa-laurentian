@@ -65,6 +65,29 @@ async def get_my_profile(current_student = Depends(require_student)):
             stats = create_result.data[0] if create_result.data else initial_stats
         else:
             stats = stats_response.data[0]
+            
+        # Transform snake_case to camelCase for frontend compatibility
+        stats_camelcase = {
+            "id": stats.get("id"),
+            "userId": stats.get("user_id"),
+            "totalXP": stats.get("total_xp", 0),
+            "currentXP": stats.get("current_xp", 0),
+            "currentLevel": stats.get("current_level", 1),
+            "currentRank": stats.get("current_rank", 0),
+            "gameboardXP": stats.get("gameboard_xp", 0),
+            "gameboardPosition": stats.get("gameboard_position", 1),
+            "gameboardMoves": stats.get("gameboard_moves", 0),
+            "gold": stats.get("gold", 3),
+            "unitXP": stats.get("unit_xp", {}),
+            "questProgress": stats.get("quest_progress", {
+                "quest1": 0,
+                "quest2": 0, 
+                "quest3": 0,
+                "currentQuest": 1
+            }),
+            "assignmentAwards": stats.get("assignment_awards", []),
+            "medals": stats.get("medals", [])
+        }
         
         # Create skills data structure (skills are derived from XP/level)
         skills = {
@@ -89,7 +112,7 @@ async def get_my_profile(current_student = Depends(require_student)):
         return {
             "success": True,
             "data": {
-                "stats": stats,
+                "stats": stats_camelcase,
                 "skills": skills,
                 "inventory": inventory,
                 "recent_xp": xp_response.data
@@ -113,24 +136,39 @@ async def get_my_stats(current_student = Depends(require_student)):
         stats_response = service_client.table('player_stats').select('*').eq('user_id', current_student['id']).execute()
         
         if stats_response.data:
+            stats = stats_response.data[0]
+            # Transform to camelCase for frontend
+            stats_camelcase = {
+                "id": stats.get("id"),
+                "userId": stats.get("user_id"),
+                "totalXP": stats.get("total_xp", 0),
+                "currentXP": stats.get("current_xp", 0),
+                "currentLevel": stats.get("current_level", 1),
+                "currentRank": stats.get("current_rank", 0),
+                "gameboardXP": stats.get("gameboard_xp", 0),
+                "gameboardPosition": stats.get("gameboard_position", 1),
+                "gameboardMoves": stats.get("gameboard_moves", 0),
+                "gold": stats.get("gold", 3),
+                "unitXP": stats.get("unit_xp", {})
+            }
             return {
                 "success": True,
-                "data": stats_response.data[0]
+                "data": stats_camelcase
             }
         else:
-            # Return default stats if none exist
+            # Return default stats in camelCase if none exist
             return {
                 "success": True,
                 "data": {
-                    "total_xp": 0,
-                    "current_xp": 0,
-                    "current_level": 1,
-                    "current_rank": 0,
-                    "gameboard_xp": 0,
-                    "gameboard_position": 1,
-                    "gameboard_moves": 0,
+                    "totalXP": 0,
+                    "currentXP": 0,
+                    "currentLevel": 1,
+                    "currentRank": 0,
+                    "gameboardXP": 0,
+                    "gameboardPosition": 1,
+                    "gameboardMoves": 0,
                     "gold": 3,
-                    "unit_xp": {}
+                    "unitXP": {}
                 }
             }
             
