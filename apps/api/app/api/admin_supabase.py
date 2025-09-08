@@ -1073,3 +1073,111 @@ async def delete_resource(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/award")
+@limiter.limit("30/minute")
+async def award_student(
+    request: Request,
+    award_data: dict,
+    current_admin = Depends(require_admin)
+):
+    """Generic award endpoint for XP, gold, moves, or other rewards"""
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Extract award data
+        award_type = award_data.get('type', '').lower()
+        target_user_id = award_data.get('target_user_id')
+        amount = award_data.get('amount', 0)
+        description = award_data.get('description', '')
+        
+        if not target_user_id or not award_type or amount <= 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Missing required fields: target_user_id, type, and amount > 0"
+            )
+        
+        # Verify student exists
+        student = service_client.table('users').select('*').eq('id', target_user_id).eq('is_admin', False).execute()
+        if not student.data:
+            raise HTTPException(status_code=404, detail="Student not found")
+        
+        student_data = student.data[0]
+        
+        # Get or create player stats
+        player_stats = service_client.table('player_stats').select('*').eq('user_id', target_user_id).execute()
+        
+        if player_stats.data:
+            # Update existing stats
+            current_stats = player_stats.data[0]
+            updates = {"updated_at": datetime.utcnow().isoformat()}
+            
+            if award_type == "xp":
+                new_total_xp = current_stats.get('total_xp', 0) + amount
+                new_current_xp = current_stats.get('current_xp', 0) + amount
+                new_level = max(1, new_total_xp // 200 + 1)  # Every 200 XP = 1 level
+                
+                updates.update({
+                    "total_xp": new_total_xp,
+                    "current_xp": new_current_xp,
+                    "current_level": new_level
+                })
+            elif award_type == "gold":
+                updates["gold"] = current_stats.get('gold', 0) + amount
+            elif award_type == "gameboard_moves" or award_type == "moves":
+                updates["gameboard_moves"] = current_stats.get('gameboard_moves', 0) + amount
+            else:
+                raise HTTPException(status_code=400, detail=f"Unsupported award type: {award_type}")
+            
+            service_client.table('player_stats').update(updates).eq('user_id', target_user_id).execute()
+            
+        else:
+            # Create new stats record
+            new_stats = {
+                "id": str(uuid.uuid4()),
+                "user_id": target_user_id,
+                "total_xp": amount if award_type == "xp" else 0,
+                "current_xp": amount if award_type == "xp" else 0,
+                "current_level": max(1, amount // 200 + 1) if award_type == "xp" else 1,
+                "current_rank": 0,
+                "gameboard_xp": 0,
+                "gameboard_position": 1,
+                "gameboard_moves": amount if award_type in ["gameboard_moves", "moves"] else 3,
+                "gold": amount if award_type == "gold" else 0,
+                "unit_xp": {},
+                "created_at": datetime.utcnow().isoformat(),
+                "updated_at": datetime.utcnow().isoformat()
+            }
+            service_client.table('player_stats').insert(new_stats).execute()
+        
+        # Create activity log entry (if applicable)
+        if award_type == "xp" and award_data.get('assignment_id'):
+            xp_entry = {
+                "id": str(uuid.uuid4()),
+                "user_id": target_user_id,
+                "assignment_id": award_data['assignment_id'],
+                "assignment_name": description,
+                "unit_id": award_data.get('unit_id'),
+                "xp_amount": amount,
+                "awarded_by": current_admin['id'],
+                "description": description or f"XP awarded by admin",
+                "created_at": datetime.utcnow().isoformat()
+            }
+            service_client.table('xp_entries').insert(xp_entry).execute()
+        
+        return {
+            "success": True,
+            "message": f"Successfully awarded {amount} {award_type} to {student_data['username']}",
+            "data": {
+                "award_type": award_type,
+                "amount": amount,
+                "target_user": student_data['username'],
+                "target_user_id": target_user_id
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Award error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
