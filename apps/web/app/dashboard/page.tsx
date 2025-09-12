@@ -940,8 +940,33 @@ export default function DashboardPage() {
   }, [user, sharedStats]);
 
   // Handlers for updating shared states
-  const handleStatsUpdate = (updates: Partial<PlayerStats>) => {
+  const handleStatsUpdate = async (updates: Partial<PlayerStats>) => {
     setSharedStats(prev => prev ? { ...prev, ...updates } : null);
+    
+    // Persist important stats to backend
+    const statsToSync = {
+      gameboardPosition: updates.gameboardPosition,
+      gameboardMoves: updates.gameboardMoves,
+      gameboardXP: updates.gameboardXP,
+      gold: updates.gold
+    };
+    
+    // Only sync if there are actual values to update
+    const hasUpdates = Object.values(statsToSync).some(value => value !== undefined);
+    
+    if (hasUpdates) {
+      try {
+        console.log('🔄 Syncing stats to backend:', statsToSync);
+        const response = await apiClient.updateMyStats(statsToSync);
+        if (response.success) {
+          console.log('✅ Stats synced successfully');
+        } else {
+          console.error('❌ Failed to sync stats:', response.error);
+        }
+      } catch (error) {
+        console.error('❌ Error syncing stats:', error);
+      }
+    }
   };
 
   const handleSkillsUpdate = (updates: Partial<PlayerSkills>) => {
@@ -977,7 +1002,22 @@ export default function DashboardPage() {
   }
 
   if (!user) {
-    return null; // Will redirect to onboarding
+    // Show a brief redirecting message instead of null to avoid empty SSR
+    return (
+      <div className="min-h-screen winter-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-olympic-blue rounded-full mb-4 shadow-lg animate-pulse">
+            <span className="text-white text-2xl font-oswald font-bold">🏔️</span>
+          </div>
+          <h1 className="text-2xl font-oswald font-bold text-gray-900 mb-2">
+            Redirecting to onboarding...
+          </h1>
+          <p className="text-gray-600">
+            Please wait while we redirect you
+          </p>
+        </div>
+      </div>
+    );
   }
 
   const handleLogout = () => {

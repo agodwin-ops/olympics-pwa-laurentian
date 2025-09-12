@@ -27,7 +27,7 @@ export default function OlympicGameboard({
   onInventoryUpdate
 }: OlympicGameboardProps) {
   const [gameboardState, setGameboardState] = useState<GameboardState>({
-    currentPosition: 0,
+    currentPosition: playerStats.gameboardPosition || 0,
     availableMoves: playerStats.gameboardMoves || 0,
     completedEvents: [],
     failedEvents: [],
@@ -51,6 +51,15 @@ export default function OlympicGameboard({
   const [showIntroduction, setShowIntroduction] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
   const [showSkillUpgrade, setShowSkillUpgrade] = useState(false);
+
+  // Sync gameboardState with playerStats when they update
+  useEffect(() => {
+    setGameboardState(prev => ({
+      ...prev,
+      currentPosition: playerStats.gameboardPosition || 0,
+      availableMoves: playerStats.gameboardMoves || 0,
+    }));
+  }, [playerStats.gameboardPosition, playerStats.gameboardMoves]);
 
   useEffect(() => {
     // Check if user needs to see introduction
@@ -134,8 +143,9 @@ export default function OlympicGameboard({
     setCurrentPath([]);
     setCompletedPathSpots([]);
     
-    // Add bonus moves for completing the full journey
+    // Add bonus moves and reset position for completing the full journey
     onStatsUpdate({
+      gameboardPosition: 0, // Persist return to start position
       gameboardMoves: (playerStats.gameboardMoves || 0) + 10 // Bonus moves for completing
     });
     
@@ -156,8 +166,9 @@ export default function OlympicGameboard({
         availableMoves: prev.availableMoves - 1
       }));
       
-      // Update player stats
+      // Update player stats with both position and moves
       onStatsUpdate({
+        gameboardPosition: positionId, // Persist the position
         gameboardMoves: Math.max(0, (playerStats.gameboardMoves || 0) - 1)
       });
     }

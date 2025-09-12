@@ -150,6 +150,18 @@ class ApiClient {
     return this.request('/api/students/me/skills');
   }
 
+  async updateMyStats(updates: {
+    gameboardPosition?: number;
+    gameboardMoves?: number;
+    gameboardXP?: number;
+    gold?: number;
+  }): Promise<ApiResponse<any>> {
+    return this.request('/api/students/me/update-stats', {
+      method: 'POST',
+      body: JSON.stringify(updates),
+    });
+  }
+
   // REMOVED: Leaderboard access removed for student privacy
   // async getLeaderboard(): Promise<ApiResponse<any>> {
   //   return this.request('/api/students/leaderboard');

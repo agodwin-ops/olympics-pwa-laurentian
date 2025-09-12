@@ -20,6 +20,12 @@ class ChangePasswordRequest(BaseModel):
     new_password: str
     confirm_password: str
 
+class UpdateStatsRequest(BaseModel):
+    gameboardPosition: int = None
+    gameboardMoves: int = None
+    gameboardXP: int = None
+    gold: int = None
+
 # Student authorization dependency
 async def require_student(current_user = Depends(get_current_user)):
     """Ensure current user is a student (not admin)"""
@@ -481,5 +487,77 @@ async def roll_dice(
         print(f"❌ Roll dice error: {e}")
         raise HTTPException(
             status_code=500,
+            detail=str(e)
+        )
+
+@router.post("/me/update-stats")
+async def update_my_stats(
+    stats_data: UpdateStatsRequest,
+    current_student = Depends(require_student)
+):
+    """Update current student's game stats (position, moves, XP, gold)"""
+    
+    try:
+        service_client = get_supabase_auth_client()
+        
+        # Build update data from non-None values
+        update_data = {}
+        if stats_data.gameboardPosition is not None:
+            update_data['gameboard_position'] = stats_data.gameboardPosition
+        if stats_data.gameboardMoves is not None:
+            update_data['gameboard_moves'] = stats_data.gameboardMoves
+        if stats_data.gameboardXP is not None:
+            update_data['gameboard_xp'] = stats_data.gameboardXP
+        if stats_data.gold is not None:
+            update_data['gold'] = stats_data.gold
+        
+        if not update_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No valid stats provided to update"
+            )
+        
+        # Update the player stats record
+        update_data['updated_at'] = datetime.utcnow().isoformat()
+        
+        update_response = service_client.table('player_stats').update(update_data).eq('user_id', current_student['id']).execute()
+        
+        if not update_response.data:
+            # If no existing record, create one
+            create_data = {
+                'user_id': current_student['id'],
+                'current_xp': 0,
+                'total_xp': 0,
+                'current_level': 1,
+                'current_rank': 100,
+                'gameboard_xp': 0,
+                'gameboard_position': 0,
+                'gameboard_moves': 3,
+                'gold': 3,
+                **update_data,
+                'created_at': datetime.utcnow().isoformat(),
+                'updated_at': datetime.utcnow().isoformat()
+            }
+            
+            create_response = service_client.table('player_stats').insert(create_data).execute()
+            
+            print(f"✅ Created new stats record for user {current_student['id']}")
+            return {
+                "success": True,
+                "message": "Player stats created and updated successfully",
+                "data": create_response.data[0] if create_response.data else None
+            }
+        else:
+            print(f"✅ Updated stats for user {current_student['id']}: {update_data}")
+            return {
+                "success": True,
+                "message": "Player stats updated successfully",
+                "data": update_response.data[0] if update_response.data else None
+            }
+            
+    except Exception as e:
+        print(f"❌ Update stats error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
