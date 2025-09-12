@@ -6,7 +6,7 @@
     }
   ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "https://claudable-olympics-pwa.onrender.com"
+    "NEXT_PUBLIC_API_BASE_URL": "https://olympics-pwa-laurentian.onrender.com"
   },
   "functions": {
     "apps/web/**": {
@@ -17,7 +17,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "https://claudable-olympics-pwa.onrender.com/api/$1"
+      "destination": "https://olympics-pwa-laurentian.onrender.com/api/$1"
     }
   ]
 }
