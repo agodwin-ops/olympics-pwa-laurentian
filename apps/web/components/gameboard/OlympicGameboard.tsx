@@ -313,6 +313,38 @@ export default function OlympicGameboard({
         }
         return prev;
       });
+
+      // Auto-advance to the next position on the path after completing a challenge
+      const currentIndex = currentPath.indexOf(gameboardState.currentPosition);
+      console.log(`📍 Current path:`, currentPath);
+      console.log(`📍 Current position: ${gameboardState.currentPosition}, index: ${currentIndex}`);
+      
+      if (currentIndex !== -1 && currentIndex < currentPath.length - 1) {
+        const nextPosition = currentPath[currentIndex + 1];
+        console.log(`🎯 Auto-advancing from challenge spot ${selectedChallengeSpot.id} to position ${nextPosition}`);
+        
+        // Move to next position automatically
+        setGameboardState(prev => ({
+          ...prev,
+          currentPosition: nextPosition
+        }));
+        
+        // Update persistent position
+        onStatsUpdate({
+          gameboardPosition: nextPosition
+        });
+        
+        // Check if we've reached the destination station
+        if (currentIndex === currentPath.length - 2) {
+          // Reached destination station, exit path mode
+          console.log('🏁 Reached destination station, exiting path mode');
+          setIsOnPath(false);
+          setCurrentPath([]);
+          setCompletedPathSpots([]);
+        }
+      } else {
+        console.log(`❌ Cannot auto-advance: currentIndex=${currentIndex}, pathLength=${currentPath.length}`);
+      }
     }
 
     // Close the modal
@@ -444,15 +476,26 @@ export default function OlympicGameboard({
             // Start new path if moving from a main station to another main station
             if (!isOnPath && isAtMainStation(gameboardState.currentPosition)) {
               const pathSpots = getPathBetweenStations(gameboardState.currentPosition, positionId);
+              console.log(`🛤️ Starting path from ${gameboardState.currentPosition} to ${positionId}, path spots:`, pathSpots);
+              
               if (pathSpots.length > 0) {
-                setCurrentPath([gameboardState.currentPosition, ...pathSpots, positionId]);
+                const fullPath = [gameboardState.currentPosition, ...pathSpots, positionId];
+                console.log(`🗺️ Full path:`, fullPath);
+                
+                setCurrentPath(fullPath);
                 setIsOnPath(true);
                 setCompletedPathSpots([]);
+                
                 // Move to first challenge spot on path
+                console.log(`🎯 Moving to first challenge spot: ${pathSpots[0]}`);
                 handleMoveToPosition(pathSpots[0]);
+                
                 setTimeout(() => {
                   const spot = CHALLENGE_SPOTS.find(s => s.id === pathSpots[0]);
-                  if (spot) handleChallengeSpotClick(spot);
+                  if (spot) {
+                    console.log(`🎪 Opening challenge spot modal:`, spot.name);
+                    handleChallengeSpotClick(spot);
+                  }
                 }, 100);
                 return;
               } else {
