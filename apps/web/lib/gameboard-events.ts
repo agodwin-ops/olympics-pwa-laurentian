@@ -6,24 +6,164 @@ In this game, based roughly on the 1988 Calgary Olympics, Canada's first success
 In this game, you will encounter many challenges related to planning, logistics, communications. How you win or lose each challenge will dictate how well Canadian athletes perform at these Olympic Games. Along the way, you can earn other special items that earn you points or gameboard moves.
 `;
 
-// Start position (everyone begins here)
-export const START_POSITION = {
-  id: 0,
-  name: "Olympic Village Start",
-  story: "Welcome to the 1988 Calgary Olympics! Your journey as Chef de Mission begins here.",
-  challenge: "Start your Olympic adventure by exploring the venues.",
-  requiredSkill: "Tactics" as const,
-  successOutcome: {
-    description: "Your Olympic journey begins!",
-    xpReward: 0
+// Linear sequence of ALL positions (stations and challenge spots)
+// Each position is one step, requires one move, no going backwards
+export const LINEAR_PATH = [
+  // Start
+  {
+    id: 0,
+    name: "Olympic Village Start",
+    type: "start" as const,
+    story: "Welcome to the 1988 Calgary Olympics! Your journey as Chef de Mission begins here.",
+    challenge: "Start your Olympic adventure by exploring the venues.",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "Your Olympic journey begins!", xpReward: 0 },
+    failOutcome: { description: "Your Olympic journey begins!", xpReward: 0 },
+    position: { x: 10, y: 80 }
   },
-  failOutcome: {
-    description: "Your Olympic journey begins!",
-    xpReward: 0
+  
+  // Path to Station 1
+  {
+    id: 1,
+    name: "Snowy Trail Challenge",
+    type: "challenge" as const,
+    story: "Digging in the snow you found some loot.",
+    challenge: "Tactic skill determines success in picking up special items (ie. Gatorade, Water Bottle, Skis, Toques).",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "Found valuable items in the snow!", xpReward: 25 },
+    failOutcome: { description: "No items found, but experience gained.", xpReward: 10 },
+    position: { x: 15, y: 70 }
   },
-  position: { x: 5, y: 5 },
-  connectsTo: [101] // Connect to first path towards station 1
-};
+  
+  // Station 1 - Saddledome
+  {
+    id: 2,
+    name: "Saddledome Stadium",
+    type: "station" as const,
+    story: "The Olympic Saddledome was the primary venue for ice hockey and figure skating. Located at Stampede Park, the facility was expected to cost $83 million but cost overruns pushed the facility to nearly $100 million. The organizing committee overpromised tickets to insiders and sponsors for seats to the premier Gold Medal Hockey game at the Saddledome. This is the first year that NHL players were allowed to play in the Olympics and Canada is a favourite to win the Gold medal against the dominating Soviet Union team.",
+    challenge: "Politically you are pressured to find 2 tickets for Andy Moog, Canada's goaltender and 3-time Stanley Cup Champion. You get a lead that a major sponsor has tickets to give away but by the time you call they have already engaged Finland's Chef de Mission in a deal. You enter into a bidding war to get these tickets.",
+    requiredSkill: "Strength" as const,
+    successOutcome: { description: "You win the bidding war and get the tickets.", xpReward: 750 },
+    failOutcome: { description: "You'll have to tell Andy Moog that his mom can't come to the game.", xpReward: 0 },
+    position: { x: 25, y: 60 }
+  },
+  
+  // Path to Station 2
+  {
+    id: 3,
+    name: "Frozen Path Challenge",
+    type: "challenge" as const,
+    story: "Digging in the snow you found some loot.",
+    challenge: "Tactic skill determines success in picking up special items.",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "Found supplies on the frozen path!", xpReward: 25 },
+    failOutcome: { description: "Path was too icy, but you made it through.", xpReward: 10 },
+    position: { x: 35, y: 55 }
+  },
+  
+  {
+    id: 4,
+    name: "Ice Bridge Challenge",
+    type: "challenge" as const,
+    story: "Digging in the snow you found some loot.",
+    challenge: "Tactic skill determines success in picking up special items.",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "Successfully crossed and found items!", xpReward: 25 },
+    failOutcome: { description: "Slipped on ice but crossed safely.", xpReward: 10 },
+    position: { x: 45, y: 50 }
+  },
+  
+  {
+    id: 5,
+    name: "Maple Grove Challenge",
+    type: "challenge" as const,
+    story: "Digging in the snow you found some loot.",
+    challenge: "Tactic skill determines success in picking up special items.",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "Found items among the maple trees!", xpReward: 25 },
+    failOutcome: { description: "Searched the grove thoroughly.", xpReward: 10 },
+    position: { x: 55, y: 45 }
+  },
+  
+  // Station 2 - Nakiska
+  {
+    id: 6,
+    name: "Nakiska Ski Venue",
+    type: "station" as const,
+    story: "There was a lot of controversy when Nakiska was awarded the contract for all downhill events. For many reasons, it was considered an inferior venue for an Olympic event. Apart from a not-very-technical course, the Nakiska ski area was notorious for having a lack of snow. The venue was banking on having a good snow year but just in case, a fleet of snow guns were brought in from the USA. When FIS inspects the course they think the base is too thin and wants to supplement with machine-made snow but other countries want to let the event go ahead with the subpar natural snow.",
+    challenge: "As Chef, you know your athletes are used to racing on machine-made snow and will have an advantage. You put in an appeal the other countries' request to go ahead with the event on real snow.",
+    requiredSkill: "Climbing" as const,
+    successOutcome: { description: "FIS uses the guns to make snow.", xpReward: 500 },
+    failOutcome: { description: "The race goes ahead on marginal snow base.", xpReward: 0 },
+    position: { x: 65, y: 40 }
+  },
+
+  // Path to Station 3
+  {
+    id: 7,
+    name: "Mountain Trail Challenge",
+    type: "challenge" as const,
+    story: "Digging in the snow you found some loot.",
+    challenge: "Tactic skill determines success in picking up special items.",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "Found mountain supplies!", xpReward: 25 },
+    failOutcome: { description: "The mountain trail was challenging.", xpReward: 10 },
+    position: { x: 75, y: 35 }
+  },
+
+  {
+    id: 8,
+    name: "Alpine Pass Challenge", 
+    type: "challenge" as const,
+    story: "Digging in the snow you found some loot.",
+    challenge: "Tactic skill determines success in picking up special items.",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "Found items at the alpine pass!", xpReward: 25 },
+    failOutcome: { description: "The pass was too windy.", xpReward: 10 },
+    position: { x: 85, y: 30 }
+  },
+
+  {
+    id: 9,
+    name: "Ski Lodge Challenge",
+    type: "challenge" as const,
+    story: "Digging in the snow you found some loot.",
+    challenge: "Tactic skill determines success in picking up special items.",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "Found warm supplies at the lodge!", xpReward: 25 },
+    failOutcome: { description: "The lodge was closed for repairs.", xpReward: 10 },
+    position: { x: 90, y: 20 }
+  },
+
+  // Station 3 - Winsport
+  {
+    id: 10,
+    name: "Winsport Canada Olympic Park",
+    type: "station" as const,
+    story: "The Winsport (now known as Canada Olympic Park) facility was built in Calgary to house bobsleigh, luge and the jumping events. The original park was built with 5 jumps ranging from K4-K90 ratings. The Canadian team has been training on these jumps for years. However, the Chinook winds have blown in just as the event is slated to start. There's a decent chance the winds might be too high for a safe jumping event. The Canadian team is prepped and ready to take the chairlift to the top of the course where the coach is waiting.",
+    challenge: "As the Chef de Mission you're onsite at the venue to decide alongside the jury whether the event should go ahead or not based on the wind readings. You know your team is psychologically prepared to race and you want FIS to let the race go ahead. The other countries, led by a very vocal Austrian contingent are pushing FIS to delay the start.",
+    requiredSkill: "Speed" as const,
+    successOutcome: { description: "FIS goes ahead with the race start.", xpReward: 750 },
+    failOutcome: { description: "The race is delayed. Canadian athletes suffer.", xpReward: 0 },
+    position: { x: 90, y: 10 }
+  },
+
+  // Final challenge (for demo - can add more)
+  {
+    id: 11,
+    name: "Olympic Finish Line",
+    type: "station" as const,
+    story: "You have successfully navigated the challenges of the Calgary Olympics as Chef de Mission! The Canadian team's performance has been greatly influenced by your decisions along the way.",
+    challenge: "Reflect on your Olympic journey and celebrate the achievements of Team Canada.",
+    requiredSkill: "Tactics" as const,
+    successOutcome: { description: "🏆 Olympic Mission Completed! Team Canada is proud!", xpReward: 1000 },
+    failOutcome: { description: "🏆 Olympic Mission Completed with experience gained!", xpReward: 500 },
+    position: { x: 85, y: 5 }
+  }
+];
+
+// Keep backward compatibility with old system
+export const START_POSITION = LINEAR_PATH[0];
 
 // Main Olympic Event Stations (11 stations in linear order)
 export const MAIN_STATIONS: GameboardEvent[] = [

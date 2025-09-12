@@ -170,9 +170,28 @@ export interface EventOutcome {
 export interface GameboardState {
   currentPosition: number;
   availableMoves: number;
-  completedEvents: number[];
-  failedEvents: number[];
+  completedEvents: number[]; // Successfully completed positions
+  failedEvents: number[]; // Failed positions
   hasSeenIntroduction: boolean;
+  attemptedPositions: number[]; // All positions attempted (success or fail)
+}
+
+export interface LinearPosition {
+  id: number;
+  name: string;
+  type: 'start' | 'challenge' | 'station';
+  story: string;
+  challenge: string;
+  requiredSkill: 'Tactics' | 'Strength' | 'Endurance' | 'Climbing' | 'Speed';
+  successOutcome: {
+    description: string;
+    xpReward: number;
+  };
+  failOutcome: {
+    description: string;
+    xpReward: number;
+  };
+  position: { x: number; y: number };
 }
 
 export interface LuckyNumberSelection {

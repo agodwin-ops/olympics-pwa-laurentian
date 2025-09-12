@@ -6,7 +6,7 @@ import { useOlympicsAuth } from '@/contexts/OlympicsAuthContext';
 import { User, PlayerStats, PlayerSkills, PlayerInventory, QuestProgress } from '@/types/olympics';
 import { getRankByXP, getRankProgress, getNextRank, getXPForNextRank, getQuestPercentages, QUEST_INFO } from '@/lib/rank-system';
 import AdminPanel from '@/components/admin/AdminPanel';
-import OlympicGameboard from '@/components/gameboard/OlympicGameboard';
+import LinearGameboard from '@/components/gameboard/LinearGameboard';
 import PasswordChangeModal from '@/components/PasswordChangeModal';
 import FileViewer from '@/components/shared/FileViewer';
 import apiClient from '@/lib/api-client';
@@ -1075,7 +1075,7 @@ export default function DashboardPage() {
       {activeTab === 'dashboard' && <DashboardView user={user} userProgress={userProgress} />}
       
       {activeTab === 'gameboard' && sharedStats && sharedSkills && sharedInventory && (
-        <OlympicGameboard
+        <LinearGameboard
           user={user}
           playerStats={sharedStats}
           playerSkills={sharedSkills}
