@@ -97,6 +97,63 @@ function DashboardView({ user, userProgress }: DashboardViewProps) {
     loadPlayerData();
   }, [user]);
 
+  // Auto-refresh player data periodically to catch admin awards
+  useEffect(() => {
+    if (!user) return;
+
+    console.log('🔄 Setting up periodic data refresh for real-time updates');
+    
+    const refreshInterval = setInterval(async () => {
+      try {
+        // Check token validity first
+        const tokenValid = await apiClient.refreshTokenIfNeeded();
+        if (!tokenValid) {
+          console.log('❌ Token refresh failed, stopping periodic updates');
+          clearInterval(refreshInterval);
+          return;
+        }
+
+        // Silently refresh player data
+        console.log('🔄 Periodic refresh: Checking for data updates...');
+        const profileResponse = await apiClient.getMyProfile();
+        if (profileResponse.success) {
+          const newStats = profileResponse.data.stats;
+          const newSkills = profileResponse.data.skills;
+          
+          // Check if data actually changed to avoid unnecessary re-renders
+          setStats(prevStats => {
+            if (JSON.stringify(prevStats) !== JSON.stringify(newStats)) {
+              console.log('✨ New data received from server!', {
+                oldXP: prevStats?.totalXP || 0,
+                newXP: newStats?.totalXP || 0,
+                oldGold: prevStats?.gold || 0, 
+                newGold: newStats?.gold || 0
+              });
+              return newStats;
+            }
+            return prevStats;
+          });
+          
+          setSkills(prevSkills => {
+            if (JSON.stringify(prevSkills) !== JSON.stringify(newSkills)) {
+              console.log('🆙 Skills updated!');
+              return newSkills;
+            }
+            return prevSkills;
+          });
+        }
+      } catch (error) {
+        console.error('❌ Periodic refresh failed:', error);
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    // Cleanup interval on unmount
+    return () => {
+      console.log('🛑 Stopping periodic data refresh');
+      clearInterval(refreshInterval);
+    };
+  }, [user]);
+
   const loadPlayerData = async () => {
     try {
       // Load player profile

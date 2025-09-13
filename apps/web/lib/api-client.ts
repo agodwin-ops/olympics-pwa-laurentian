@@ -32,6 +32,49 @@ class ApiClient {
     }
   }
 
+  // Check if token is close to expiration (within 5 minutes)
+  isTokenExpiringSoon(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiration = payload.exp * 1000; // Convert to milliseconds
+      const fiveMinutesFromNow = Date.now() + (5 * 60 * 1000);
+      return expiration < fiveMinutesFromNow;
+    } catch (error) {
+      return true; // If we can't parse, assume expired
+    }
+  }
+
+  // Attempt to refresh token by re-authenticating
+  async refreshTokenIfNeeded(): Promise<boolean> {
+    if (!this.token) return false;
+    
+    if (this.isTokenExpiringSoon(this.token)) {
+      console.log('🔄 Token expiring soon, attempting silent refresh...');
+      
+      try {
+        // Try to get a fresh token by validating current user
+        const response = await this.getCurrentUser();
+        if (response.success) {
+          console.log('✅ Token still valid');
+          return true;
+        }
+      } catch (error) {
+        console.log('❌ Token refresh failed, user will need to re-login');
+        this.setToken(null);
+        
+        // Clear stored tokens
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('olympics_auth_token');
+          sessionStorage.removeItem('olympics_auth_token');
+        }
+        
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
