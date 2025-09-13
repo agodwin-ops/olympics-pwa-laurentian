@@ -1,4 +1,44 @@
 {
   "version": 2,
-  "regions": ["cle1"]
+  "regions": ["cle1"],
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "env": {
+    "NEXT_PUBLIC_API_BASE_URL": "https://olympics-pwa-laurentian.onrender.com",
+    "NEXT_PUBLIC_WS_BASE_URL": "olympics-pwa-laurentian.onrender.com",
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "app/**/*.js": {
+      "maxDuration": 30
+    }
+  },
+  "headers": [
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options", 
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy", 
+          "value": "origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
 }
