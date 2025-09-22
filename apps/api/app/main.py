@@ -16,13 +16,13 @@ from app.api.project_services import router as project_services_router
 from app.api.github import router as github_router
 from app.api.vercel import router as vercel_router
 from app.api.auth_supabase import router as auth_router
-# from app.api.students import router as students_router  # TEMP: Disabled for Supabase migration
+from app.api.students_supabase import router as students_router
 from app.api.supabase_auth import router as supabase_auth_router
-# from app.api.admin import router as admin_router  # TEMP: Disabled for Supabase migration
-# from app.api.leaderboard import router as leaderboard_router  # TEMP: Disabled for Supabase migration
-# from app.api.general import router as general_router  # TEMP: Disabled for Supabase migration
-# from app.api.resources import router as resources_router
-# from app.api.realtime import router as realtime_router
+from app.api.admin_supabase import router as admin_router
+from app.api.leaderboard import router as leaderboard_router
+from app.api.general import router as general_router
+from app.api.resources import router as resources_router
+from app.api.realtime import router as realtime_router
 from app.core.logging import configure_logging
 from app.core.terminal_ui import ui
 # Removed SQLAlchemy imports - using Supabase SDK only
@@ -96,12 +96,12 @@ app.include_router(github_router)  # GitHub integration API
 app.include_router(vercel_router)  # Vercel integration API
 app.include_router(auth_router, prefix="/api")  # Olympics authentication API (SQLite)
 app.include_router(supabase_auth_router, prefix="/api")  # Olympics Supabase SDK authentication API
-# app.include_router(students_router, prefix="/api")  # Olympics students API - TEMP: Disabled for migration
-# app.include_router(admin_router, prefix="/api")  # Olympics admin API - TEMP: Disabled for migration
-# app.include_router(leaderboard_router, prefix="/api")  # Olympics leaderboard API - TEMP: Disabled for migration
-# app.include_router(general_router, prefix="/api")  # Olympics general endpoints API - TEMP: Disabled for migration
-# app.include_router(resources_router, prefix="/api")  # Olympics resources API  
-# app.include_router(realtime_router, prefix="/api")  # Olympics real-time API
+app.include_router(students_router, prefix="/api")  # Olympics students API (Supabase)
+app.include_router(admin_router, prefix="/api")  # Olympics admin API (Supabase)
+app.include_router(leaderboard_router, prefix="/api")  # Olympics leaderboard API
+app.include_router(general_router, prefix="/api")  # Olympics general endpoints API
+app.include_router(resources_router, prefix="/api")  # Olympics resources API  
+app.include_router(realtime_router, prefix="/api")  # Olympics real-time API
 
 
 @app.get("/health")
