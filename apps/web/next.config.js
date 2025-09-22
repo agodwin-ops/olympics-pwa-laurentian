@@ -48,10 +48,22 @@ const nextConfig = {
     ]
   },
   
+  // API Proxy Configuration
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: process.env.NODE_ENV === 'production'
+          ? 'https://olympics-pwa-laurentian.onrender.com/api/:path*'
+          : 'http://localhost:8080/api/:path*',
+      },
+    ];
+  },
+
   // Environment-specific configuration
   env: {
-    NEXT_PUBLIC_API_BASE_URL: process.env.NODE_ENV === 'production' 
-      ? process.env.NEXT_PUBLIC_API_BASE_URL 
+    NEXT_PUBLIC_API_BASE_URL: process.env.NODE_ENV === 'production'
+      ? process.env.NEXT_PUBLIC_API_BASE_URL
       : 'http://localhost:8080',
   },
 };
