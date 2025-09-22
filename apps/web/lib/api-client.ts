@@ -1,4 +1,7 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (typeof window !== 'undefined' && window.location.hostname.includes('vercel')
+    ? 'https://olympics-pwa-laurentian.onrender.com'
+    : 'http://localhost:8080');
 
 interface ApiResponse<T = any> {
   success: boolean;
