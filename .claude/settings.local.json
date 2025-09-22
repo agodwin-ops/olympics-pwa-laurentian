@@ -27,7 +27,8 @@
       "Bash(node:*)",
       "Bash(lsof:*)",
       "Bash(pip install:*)",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "WebFetch(domain:olympics-pwa-laurentian-2025.vercel.app)"
     ],
     "deny": [],
     "ask": []

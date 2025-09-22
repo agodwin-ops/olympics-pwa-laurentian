@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Olympics PWA Environment Debug</title>
+</head>
+<body>
+    <h1>Environment Variable Debug</h1>
+    <div id="debug-output"></div>
+    
+    <script>
+        // This will run in the browser and show us what environment variables are actually available
+        const debugInfo = {
+            currentURL: window.location.href,
+            currentHostname: window.location.hostname,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Try to simulate what the API client does
+        console.log('Environment debug info:', debugInfo);
+        
+        // Test if we can make an actual API call
+        fetch('/api/auth/me')
+            .then(response => {
+                console.log('API call response status:', response.status);
+                console.log('API call URL:', response.url);
+                return response.json();
+            })
+            .then(data => {
+                console.log('API response:', data);
+                document.getElementById('debug-output').innerHTML = `
+                    <h2>Debug Results:</h2>
+                    <p><strong>Current URL:</strong> ${debugInfo.currentURL}</p>
+                    <p><strong>Hostname:</strong> ${debugInfo.currentHostname}</p>
+                    <p><strong>Timestamp:</strong> ${debugInfo.timestamp}</p>
+                    <h3>API Test:</h3>
+                    <p><strong>Status:</strong> ${response.status}</p>
+                    <p><strong>Response:</strong> ${JSON.stringify(data)}</p>
+                    <p><strong>Analysis:</strong> ${
+                        response.url.includes('olympics-pwa-laurentian.onrender.com') 
+                            ? '✅ Using production API!' 
+                            : '❌ Using localhost API'
+                    }</p>
+                `;
+            })
+            .catch(error => {
+                console.error('API call failed:', error);
+                document.getElementById('debug-output').innerHTML = `
+                    <h2>Debug Results:</h2>
+                    <p><strong>Current URL:</strong> ${debugInfo.currentURL}</p>
+                    <p><strong>Hostname:</strong> ${debugInfo.currentHostname}</p>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                `;
+            });
+    </script>
+</body>
+</html>

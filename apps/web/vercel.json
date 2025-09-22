@@ -40,5 +40,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://olympics-pwa-laurentian.onrender.com/api/$1"
+    }
   ]
 }
